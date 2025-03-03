@@ -227,7 +227,8 @@ public List<Book> searchBooks(String keyword) {
     public boolean addCategory(String categoryName) {
         String sql = "INSERT INTO TheLoai (TenTheLoai) VALUES (?)";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, categoryName);
             int rowsInserted = statement.executeUpdate();
             return rowsInserted > 0; // Returns true if a category was added

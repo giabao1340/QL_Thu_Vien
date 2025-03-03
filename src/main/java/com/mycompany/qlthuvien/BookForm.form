@@ -120,7 +120,6 @@
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="txt" min="-2" pref="88" max="-2" attributes="0"/>
                               <Component id="txtTheLoai" max="32767" attributes="0"/>
                               <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                               <Component id="buttonSaveCate" alignment="0" pref="172" max="32767" attributes="0"/>
@@ -178,27 +177,26 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="txtTenSach" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="txt" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="txtTheLoai" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                           <Component id="txtSearch" alignment="3" min="-2" pref="29" max="-2" attributes="0"/>
                           <Component id="buttonSearch" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jScrollPane2" alignment="0" min="-2" pref="349" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="txtTacGia" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="txtTheLoai" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="buttonSaveCate" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="txtNamPhatHanh" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="buttonSaveCate" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -223,12 +221,12 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                                  <Component id="jLabelImage" pref="136" max="32767" attributes="0"/>
+                                  <Component id="jLabelImage" pref="143" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="buttonUploadImage" min="-2" pref="35" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="104" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="111" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -456,14 +454,6 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Add Categlory"/>
           </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="txt">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="T&#xea;n th&#x1ec3; lo&#x1ea1;i"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtActionPerformed"/>
-          </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="txtTheLoai">
         </Component>
