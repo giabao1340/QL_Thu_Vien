@@ -24,7 +24,7 @@ public class BookDAO {
 
         try {
             // Establish database connection
-            DatabaseConnection db = DatabaseConnection.getInstance();;
+            DatabaseConnection db = DatabaseConnection.getInstance();
             conn = db.getConnection();
 
             // Retrieve MaTheLoai from the TheLoai table
@@ -137,7 +137,7 @@ public List<Book> searchBooks(String keyword) {
 
     try {
         // Thiết lập kết nối cơ sở dữ liệu
-        DatabaseConnection db = DatabaseConnection.getInstance();;
+        DatabaseConnection db = DatabaseConnection.getInstance();
         conn = db.getConnection();
 
         // Tạo câu lệnh SQL để tìm kiếm sách
