@@ -765,8 +765,8 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
         // Đọc thông tin cấu hình và tài khoản email từ cơ sở dữ liệu
         String host = "smtp.gmail.com";
         String port = "587";
-        String username = "/"; // email để gửi mail
-        String password = "/"; // mật khẩu được tạo từ trang https://myaccount.google.com/u/1/apppasswords
+        String username = "ascf5649@gmail.com";
+        String password = "qyed tqed tlbe frad"; // Thay thế bằng App Password
 
         // Cấu hình các thuộc tính SMTP
         Properties properties = new Properties();
