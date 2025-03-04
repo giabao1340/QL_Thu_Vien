@@ -281,6 +281,7 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         header.setFont(new Font("Segoe UI", Font.BOLD, 15));
         tablePhieuMuon.setRowHeight(30);
         tablePhieuMuon.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        tablePhieuMuon.setDefaultEditor(Object.class, null);
         tablePhieuMuon.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -290,16 +291,21 @@ public class PhieuMuonPage extends javax.swing.JFrame {
                 }
             }
         });
+        // Bắt sự kiện click trên bảng (1 lần click)
         tablePhieuMuon.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 2) {
+                if (evt.getClickCount() == 2) {  // Kiểm tra click 1 lần
                     int selectedRow = tablePhieuMuon.getSelectedRow();
                     if (selectedRow != -1) {
                         openDetailPage(selectedRow);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng hợp lệ!");
                     }
                 }
             }
         });
+
 
         btnSearch.setText("Tìm");
         btnSearch.addActionListener(new java.awt.event.ActionListener() {
@@ -876,53 +882,54 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         return tenSachList.toArray(new String[0]);
     }
 
-    //mở trang chi tiết phiếu mượn
-    private void openDetailPage(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < tableModel.getRowCount()) {
-            // Fetch data from the table model
-            Object maPhieuMuonObj = tableModel.getValueAt(rowIndex, 0);
-            Object ngayMuonObj = tableModel.getValueAt(rowIndex, 1);
-            Object ngayTraObj = tableModel.getValueAt(rowIndex, 2);
-            Object maDocGiaObj = tableModel.getValueAt(rowIndex, 5);
+private void openDetailPage(int rowIndex) {
+    if (rowIndex >= 0 && rowIndex < tableModel.getRowCount()) {
+        // Chuyển đổi chỉ số dòng nếu bảng có sắp xếp
+        int modelRowIndex = tablePhieuMuon.convertRowIndexToModel(rowIndex);
 
-            // Convert objects to strings, handling null values
-            String maPhieuMuon = (maPhieuMuonObj != null) ? maPhieuMuonObj.toString() : "Không có dữ liệu";
-            String ngayMuon = (ngayMuonObj != null) ? ngayMuonObj.toString() : "Không có dữ liệu";
-            String ngayTra = (ngayTraObj != null) ? ngayTraObj.toString() : "Không có dữ liệu";
-            String maDocGia = (maDocGiaObj != null) ? maDocGiaObj.toString() : "Không có dữ liệu";
+        // Lấy dữ liệu từ tableModel
+        Object maPhieuMuonObj = tableModel.getValueAt(modelRowIndex, 0);
+        Object ngayMuonObj = tableModel.getValueAt(modelRowIndex, 1);
+        Object ngayTraObj = tableModel.getValueAt(modelRowIndex, 2);
+        Object maDocGiaObj = tableModel.getValueAt(modelRowIndex, 5);
 
-            // Open the DetailPage JFrame
-            ChiTietPhieuMuon detailPage = new ChiTietPhieuMuon(this, maPhieuMuon, ngayMuon, ngayTra, maDocGia);
-            detailPage.setVisible(true);
-            detailPage.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosed(WindowEvent e) {
-                    // Khi trang chi tiết bị đóng, thực hiện reset trang chính
+        // Chuyển đổi về String, xử lý null
+        String maPhieuMuon = (maPhieuMuonObj != null) ? maPhieuMuonObj.toString() : "Không có dữ liệu";
+        String ngayMuon = (ngayMuonObj != null) ? ngayMuonObj.toString() : "Không có dữ liệu";
+        String ngayTra = (ngayTraObj != null) ? ngayTraObj.toString() : "Không có dữ liệu";
+        String maDocGia = (maDocGiaObj != null) ? maDocGiaObj.toString() : "Không có dữ liệu";
 
-                    updateTableData();
-                    loadBookNames();
-                }
-            });
-        } else {
-            JOptionPane.showMessageDialog(this, "Dòng dữ liệu không hợp lệ.");
-        }
+        // Mở cửa sổ chi tiết phiếu mượn
+        ChiTietPhieuMuon detailPage = new ChiTietPhieuMuon(this, maPhieuMuon, ngayMuon, ngayTra, maDocGia);
+        detailPage.setVisible(true);
+
+        // Thêm sự kiện khi đóng cửa sổ
+        detailPage.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                updateTableData();  // Cập nhật dữ liệu bảng
+                loadBookNames();    // Load lại danh sách sách
+            }
+        });
+    } else {
+        JOptionPane.showMessageDialog(this, "Dòng dữ liệu không hợp lệ.");
     }
+}
+
 
     private void sendEmail() {
-        // Đọc thông tin cấu hình và tài khoản email từ cơ sở dữ liệu
         String host = "smtp.gmail.com";
         String port = "587";
         String username = "ascf5649@gmail.com";
-        String password = "qyed tqed tlbe frad";
+        String password = "qyed tqed tlbe frad"; // Thay thế bằng App Password
 
-        // Cấu hình các thuộc tính SMTP
         Properties properties = new Properties();
         properties.put("mail.smtp.host", host);
         properties.put("mail.smtp.port", port);
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
-        // Tạo một phiên làm việc với các thuộc tính đã cấu hình
         Session session = Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -931,50 +938,40 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         });
 
         try {
-            // Tạo một đối tượng MimeMessage
-            Message msg = new MimeMessage(session);
-
-            // Đặt địa chỉ người gửi
-            msg.setFrom(new InternetAddress(username));
-            // Lấy danh sách tên sách đã mượn
-            String[] tenSachDaMuon = getTenSachDaMuon(maDocGia);
-
-            // Kiểm tra và sử dụng giá trị email đã được cập nhật từ hàm searchReaderEmail()
-            if (email.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Không tìm được email của độc giả");
+            // Kiểm tra email hợp lệ
+            if (email == null || email.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Email độc giả không hợp lệ!");
                 return;
             }
 
-            // Đặt địa chỉ người nhận là email của độc giả
-            msg.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            // Bật chế độ debug để kiểm tra lỗi
+            session.setDebug(true);
 
-            // Đặt tiêu đề email
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(username));
+            msg.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
             msg.setSubject("Trễ hạn trả sách");
 
-            // Xây dựng nội dung email
+            // Lấy danh sách sách mượn
+            String[] tenSachDaMuon = getTenSachDaMuon(maDocGia);
             StringBuilder emailContent = new StringBuilder();
-            emailContent.append("Nội dung email:\n");
-            emailContent.append("Mã độc giả: " + maDocGia + "\n");
-            emailContent.append("Họ tên: " + tenDocGia + "\n");
-            emailContent.append("Danh sách tên sách đã mượn:" + "\n");
+            emailContent.append("Mã độc giả: ").append(maDocGia).append("\n");
+            emailContent.append("Họ tên: ").append(tenDocGia).append("\n");
+            emailContent.append("Danh sách sách đã mượn:\n");
             for (String tenSach : tenSachDaMuon) {
-                emailContent.append("-" + tenSach + "\n");  // In danh sách tên sách đã mượn
-
+                emailContent.append("- ").append(tenSach).append("\n");
             }
-            // Đặt nội dung email
-            msg.setText(emailContent.toString());
 
-            // Gửi email
+            msg.setText(emailContent.toString());
             Transport.send(msg);
 
-            JOptionPane.showMessageDialog(this, "Email đã được gửi thành công đến: " + email);
-
-        } catch (NumberFormatException | MessagingException e) {
+            JOptionPane.showMessageDialog(this, "Email đã gửi thành công đến: " + email);
+        } catch (MessagingException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi gửi email: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi khi gửi email: " + e.getMessage());
         }
-
     }
+
 
     public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(() -> {
