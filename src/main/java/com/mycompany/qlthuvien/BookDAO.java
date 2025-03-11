@@ -252,38 +252,4 @@ public List<Book> searchBooks(String keyword) {
         }
         return false;
     }
-        public void updateBookState(int bookId, BookState newState) throws SQLException {
-        String sql = "UPDATE Sach SET TrangThai = ? WHERE MaSach = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            if (newState instanceof AvailableState) {
-                pstmt.setInt(1, 0); // 0 = Sẵn có
-            } else if (newState instanceof BorrowedState) {
-                pstmt.setInt(1, 1); // 1 = Đang mượn
-            } else if (newState instanceof LostState) {
-                pstmt.setInt(1, 2); // 2 = Đã mất
-            }
-
-            pstmt.setInt(2, bookId);
-            pstmt.executeUpdate();
-        }
-    }
-
-    public void borrowBook(int bookId) throws SQLException {
-        BookContext book = new BookContext();
-        book.borrowBook();
-        updateBookState(bookId, new BorrowedState());
-    }
-
-    public void returnBook(int bookId) throws SQLException {
-        BookContext book = new BookContext();
-        book.returnBook();
-        updateBookState(bookId, new AvailableState());
-    }
-
-    public void markAsLost(int bookId) throws SQLException {
-        BookContext book = new BookContext();
-        book.markAsLost();
-        updateBookState(bookId, new LostState());
-    }
-
 }
