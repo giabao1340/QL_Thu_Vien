@@ -312,63 +312,43 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
         dispose();
     }
 
-    private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
-        int selectedRow = tableSachMuon.getSelectedRow();
+private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
+    int selectedRow = tableSachMuon.getSelectedRow();
 
-        // Kiểm tra nếu có dòng nào được chọn
-        if (selectedRow >= 0) {
-            // Lấy mã sách từ cột "Mã Sách" của dòng đã chọn
-            int maSach1 = (int) tableSachMuon.getValueAt(selectedRow, 0);
-            if (isSachAvailable(maSach1) || isSachAvailable2(maSach1)) {
-                JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó");
-            } else {
-                // Gọi phương thức để cập nhật trạng thái sách
-                updateSachStatus(maSach1);
-                calculateAndUpdatePenalty(maPM);
-                trangThaiPhieu = getTrangThaiTuMaPM(maPM);
-                tra_mat = 3;
-                if (trangThaiPhieu == 0) {
-                    tra_mat = 1;
-                } else if (trangThaiPhieu == 1) {
-                    tra_mat = 2;
-                }
-                sendEmail(maSach1, tra_mat);
-                // Cập nhật lại bảng
-                loadSachInfo(maPM);
-                JOptionPane.showMessageDialog(null, "Trả sách thành công");
-            }
+    if (selectedRow >= 0) {
+        int maSach = (int) tableSachMuon.getValueAt(selectedRow, 0);
+
+        if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
+            JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó");
         } else {
-            // Hiển thị thông báo nếu không có dòng nào được chọn
-            JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để trả sách.");
+            BookContext bookContext = new BookContext(conn);
+            bookContext.setState(new ReturnedState());
+            bookContext.updateSachStatus(maSach, maPM);
         }
-
+    } else {
+        JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để trả sách.");
     }
+}
 
-    private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
-        int selectedRow = tableSachMuon.getSelectedRow();
 
-        // Kiểm tra nếu có dòng nào được chọn
-        if (selectedRow >= 0) {
-            // Lấy mã sách từ cột "Mã Sách" của dòng đã chọn
-            int maSach1 = (int) tableSachMuon.getValueAt(selectedRow, 0);
-            if (isSachAvailable(maSach1) || isSachAvailable2(maSach1)) {
-                JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó");
-            } else {
-                // Gọi phương thức để cập nhật trạng thái sách
-                updateSachStatusforLostBook(maSach1);
-                calculateAndUpdatePenaltyForLostBook(maSach1, maPM);
-                trangThaiPhieu = getTrangThaiTuMaPM(maPM);
-                tra_mat = 3;
-                sendEmail(maSach1, tra_mat);
-                // Cập nhật lại bảng
-                loadSachInfo(maPM);
-                JOptionPane.showMessageDialog(null, "Mất sách");
-            }
+private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
+    int selectedRow = tableSachMuon.getSelectedRow();
+
+    if (selectedRow >= 0) {
+        int maSach = (int) tableSachMuon.getValueAt(selectedRow, 0);
+
+        if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
+            JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó");
         } else {
-            // Hiển thị thông báo nếu không có dòng nào được chọn
-            JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để trả sách.");
+            BookContext bookContext = new BookContext(conn);
+            bookContext.setState(new LostState());
+            bookContext.updateSachStatus(maSach, maPM);
         }
+    } else {
+        JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để cập nhật trạng thái mất sách.");
     }
+}
+
 
     private void getTienPhatAndNgayTraThucTe(int maPM) {
         String query = "SELECT TienPhat, NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
@@ -521,103 +501,103 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
         }
     }
 
-    private void updateSachStatus(int maSach2) {
-        // Cập nhật trạng thái sách thành 0 (Trả thành công)
-        String updateSachQuery = "UPDATE Sach SET TrangThai = 0 WHERE MaSach = ?";
-
-        // Cập nhật ngày trả thực tế trong bảng PhieuMuon
-        String updatePhieuMuonQuery = "UPDATE PhieuMuon SET NgayTraThucTe = GETDATE() WHERE MaPM = ?";
-
-        // Truy vấn để lấy ngày trả thực tế
-        String selectNgayTraThucTeQuery = "SELECT NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
-
-        try {
-            // Cập nhật trạng thái sách
-            try (PreparedStatement pstmtUpdateSach = conn.prepareStatement(updateSachQuery)) {
-                pstmtUpdateSach.setInt(1, maSach2);
-                pstmtUpdateSach.executeUpdate(); // Thực thi cập nhật trạng thái sách
-            }
-
-            // Cập nhật ngày trả thực tế
-            try (PreparedStatement pstmtUpdatePhieuMuon = conn.prepareStatement(updatePhieuMuonQuery)) {
-                pstmtUpdatePhieuMuon.setInt(1, maPM);
-                int rowsAffected = pstmtUpdatePhieuMuon.executeUpdate();
-
-                if (rowsAffected > 0) {
-                    // Lấy ngày trả thực tế để cập nhật vào JTextField
-                    try (PreparedStatement pstmtSelect = conn.prepareStatement(selectNgayTraThucTeQuery)) {
-                        pstmtSelect.setInt(1, maPM);
-                        try (ResultSet rs = pstmtSelect.executeQuery()) {
-                            if (rs.next()) {
-                                Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
-                                // Định dạng ngày để hiển thị
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                                String formattedDate = sdf.format(ngayTraThucTe);
-                                txtNgayTraThucTe.setText(formattedDate);
-                            } else {
-                                txtNgayTraThucTe.setText("Không có dữ liệu");
-                            }
-                        }
-                    }
-
-                } else {
-                    txtNgayTraThucTe.setText("Không có dữ liệu");
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateSachStatusforLostBook(int maSach2) {
-        // Cập nhật trạng thái sách thành 0 (Trả thành công)
-        String updateSachQuery = "UPDATE Sach SET TrangThai = 2 WHERE MaSach = ?";
-
-        // Cập nhật ngày trả thực tế trong bảng PhieuMuon
-        String updatePhieuMuonQuery = "UPDATE PhieuMuon SET NgayTraThucTe = GETDATE() WHERE MaPM = ?";
-
-        // Truy vấn để lấy ngày trả thực tế
-        String selectNgayTraThucTeQuery = "SELECT NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
-
-        try {
-            // Cập nhật trạng thái sách
-            try (PreparedStatement pstmtUpdateSach = conn.prepareStatement(updateSachQuery)) {
-                pstmtUpdateSach.setInt(1, maSach2);
-                pstmtUpdateSach.executeUpdate(); // Thực thi cập nhật trạng thái sách
-            }
-
-            // Cập nhật ngày trả thực tế
-            try (PreparedStatement pstmtUpdatePhieuMuon = conn.prepareStatement(updatePhieuMuonQuery)) {
-                pstmtUpdatePhieuMuon.setInt(1, maPM);
-                int rowsAffected = pstmtUpdatePhieuMuon.executeUpdate();
-
-                if (rowsAffected > 0) {
-                    // Lấy ngày trả thực tế để cập nhật vào JTextField
-                    try (PreparedStatement pstmtSelect = conn.prepareStatement(selectNgayTraThucTeQuery)) {
-                        pstmtSelect.setInt(1, maPM);
-                        try (ResultSet rs = pstmtSelect.executeQuery()) {
-                            if (rs.next()) {
-                                Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
-                                // Định dạng ngày để hiển thị
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                                String formattedDate = sdf.format(ngayTraThucTe);
-                                txtNgayTraThucTe.setText(formattedDate);
-                            } else {
-                                txtNgayTraThucTe.setText("Không có dữ liệu");
-                            }
-                        }
-                    }
-
-                } else {
-                    txtNgayTraThucTe.setText("Không có dữ liệu");
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void updateSachStatus(int maSach2) {
+//        // Cập nhật trạng thái sách thành 0 (Trả thành công)
+//        String updateSachQuery = "UPDATE Sach SET TrangThai = 0 WHERE MaSach = ?";
+//
+//        // Cập nhật ngày trả thực tế trong bảng PhieuMuon
+//        String updatePhieuMuonQuery = "UPDATE PhieuMuon SET NgayTraThucTe = GETDATE() WHERE MaPM = ?";
+//
+//        // Truy vấn để lấy ngày trả thực tế
+//        String selectNgayTraThucTeQuery = "SELECT NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
+//
+//        try {
+//            // Cập nhật trạng thái sách
+//            try (PreparedStatement pstmtUpdateSach = conn.prepareStatement(updateSachQuery)) {
+//                pstmtUpdateSach.setInt(1, maSach2);
+//                pstmtUpdateSach.executeUpdate(); // Thực thi cập nhật trạng thái sách
+//            }
+//
+//            // Cập nhật ngày trả thực tế
+//            try (PreparedStatement pstmtUpdatePhieuMuon = conn.prepareStatement(updatePhieuMuonQuery)) {
+//                pstmtUpdatePhieuMuon.setInt(1, maPM);
+//                int rowsAffected = pstmtUpdatePhieuMuon.executeUpdate();
+//
+//                if (rowsAffected > 0) {
+//                    // Lấy ngày trả thực tế để cập nhật vào JTextField
+//                    try (PreparedStatement pstmtSelect = conn.prepareStatement(selectNgayTraThucTeQuery)) {
+//                        pstmtSelect.setInt(1, maPM);
+//                        try (ResultSet rs = pstmtSelect.executeQuery()) {
+//                            if (rs.next()) {
+//                                Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
+//                                // Định dạng ngày để hiển thị
+//                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//                                String formattedDate = sdf.format(ngayTraThucTe);
+//                                txtNgayTraThucTe.setText(formattedDate);
+//                            } else {
+//                                txtNgayTraThucTe.setText("Không có dữ liệu");
+//                            }
+//                        }
+//                    }
+//
+//                } else {
+//                    txtNgayTraThucTe.setText("Không có dữ liệu");
+//                }
+//            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    private void updateSachStatusforLostBook(int maSach2) {
+//        // Cập nhật trạng thái sách thành 0 (Trả thành công)
+//        String updateSachQuery = "UPDATE Sach SET TrangThai = 2 WHERE MaSach = ?";
+//
+//        // Cập nhật ngày trả thực tế trong bảng PhieuMuon
+//        String updatePhieuMuonQuery = "UPDATE PhieuMuon SET NgayTraThucTe = GETDATE() WHERE MaPM = ?";
+//
+//        // Truy vấn để lấy ngày trả thực tế
+//        String selectNgayTraThucTeQuery = "SELECT NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
+//
+//        try {
+//            // Cập nhật trạng thái sách
+//            try (PreparedStatement pstmtUpdateSach = conn.prepareStatement(updateSachQuery)) {
+//                pstmtUpdateSach.setInt(1, maSach2);
+//                pstmtUpdateSach.executeUpdate(); // Thực thi cập nhật trạng thái sách
+//            }
+//
+//            // Cập nhật ngày trả thực tế
+//            try (PreparedStatement pstmtUpdatePhieuMuon = conn.prepareStatement(updatePhieuMuonQuery)) {
+//                pstmtUpdatePhieuMuon.setInt(1, maPM);
+//                int rowsAffected = pstmtUpdatePhieuMuon.executeUpdate();
+//
+//                if (rowsAffected > 0) {
+//                    // Lấy ngày trả thực tế để cập nhật vào JTextField
+//                    try (PreparedStatement pstmtSelect = conn.prepareStatement(selectNgayTraThucTeQuery)) {
+//                        pstmtSelect.setInt(1, maPM);
+//                        try (ResultSet rs = pstmtSelect.executeQuery()) {
+//                            if (rs.next()) {
+//                                Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
+//                                // Định dạng ngày để hiển thị
+//                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//                                String formattedDate = sdf.format(ngayTraThucTe);
+//                                txtNgayTraThucTe.setText(formattedDate);
+//                            } else {
+//                                txtNgayTraThucTe.setText("Không có dữ liệu");
+//                            }
+//                        }
+//                    }
+//
+//                } else {
+//                    txtNgayTraThucTe.setText("Không có dữ liệu");
+//                }
+//            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private void calculateAndUpdatePenalty(int maPM) {
         String selectQuery = "SELECT NgayTraDuKien, NgayTraThucTe "

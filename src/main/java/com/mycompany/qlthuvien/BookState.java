@@ -9,7 +9,5 @@ package com.mycompany.qlthuvien;
  * @author luong
  */
 public interface BookState {
-    void borrowBook(BookContext context);  // Mượn sách
-    void returnBook(BookContext context);  // Trả sách
-    void markAsLost(BookContext context);  // Đánh dấu là mất
+    void updateStatus(BookContext context, int maSach, int maPM);
 }

@@ -1,33 +1,31 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.mycompany.qlthuvien;
 
 /**
  *
  * @author luong
  */
-public class BookContext {
-    private BookState state;
+import java.sql.Connection;
 
-    public BookContext() {
-        this.state = new AvailableState(); // Mặc định sách sẵn có
+public class BookContext {//Mượn - Trả - Mất
+    private BookState state;
+    private Connection conn;
+
+    public BookContext(Connection conn) {
+        this.conn = conn;
     }
 
     public void setState(BookState state) {
         this.state = state;
     }
 
-    public void borrowBook() {
-        state.borrowBook(this);
+    public Connection getConnection() {
+        return conn;
     }
 
-    public void returnBook() {
-        state.returnBook(this);
-    }
-
-    public void markAsLost() {
-        state.markAsLost(this);
+    public void updateSachStatus(int maSach, int maPM) {
+        if (state != null) {
+            state.updateStatus(this, maSach, maPM);
+        }
     }
 }
