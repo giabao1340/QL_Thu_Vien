@@ -464,7 +464,7 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         }
     }
 
-        private void saveBorrowingInfo() {
+    private void saveBorrowingInfo() {
         String maDocGiaStr = txtMaDocGia.getText().trim();
         if (maDocGiaStr.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập mã độc giả.");
