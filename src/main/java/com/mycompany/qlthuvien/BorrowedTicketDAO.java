@@ -75,26 +75,24 @@ public class BorrowedTicketDAO {
         }
         return false;
     }
-    
-    public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bookTitles) {
+public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bookTitles) {
         PreparedStatement pstmtPhieuMuon = null;
         PreparedStatement pstmtSachPhieuMuon = null;
         PreparedStatement pstmtFindMaSach = null;
         ResultSet rsMaSach = null;
-        PreparedStatement pstmtUpdateTrangThai = null;
-        
+
         try {
             conn.setAutoCommit(false);
-            
+
             // Thêm phiếu mượn vào bảng PhieuMuon
             String insertPhieuMuonSQL = "INSERT INTO PhieuMuon (NgayMuon, NgayTraDuKien, MaDocGia) VALUES (?, ?, ?)";
             pstmtPhieuMuon = conn.prepareStatement(insertPhieuMuonSQL, Statement.RETURN_GENERATED_KEYS);
             pstmtPhieuMuon.setDate(1, (Date) ticket.getNgayMuon());
             pstmtPhieuMuon.setDate(2, (Date) ticket.getNgayTraDuKien());
             pstmtPhieuMuon.setInt(3, ticket.getMaDocGia());
-            
+
             int rowsInsertedPhieuMuon = pstmtPhieuMuon.executeUpdate();
-            
+
             if (rowsInsertedPhieuMuon > 0) {
                 ResultSet generatedKeys = pstmtPhieuMuon.getGeneratedKeys();
                 int maPM = -1;
@@ -103,33 +101,32 @@ public class BorrowedTicketDAO {
                     ticket.setMaPM(maPM);
                 }
                 generatedKeys.close();
-                
+
                 // Tìm mã sách từ tên sách
                 String findMaSachSQL = "SELECT MaSach FROM Sach WHERE TenSach = ?";
                 pstmtFindMaSach = conn.prepareStatement(findMaSachSQL);
-                
+
                 // Thêm vào bảng Sach_PhieuMuon
                 String insertSachPhieuMuonSQL = "INSERT INTO Sach_PhieuMuon (MaSach, MaPM) VALUES (?, ?)";
                 pstmtSachPhieuMuon = conn.prepareStatement(insertSachPhieuMuonSQL);
-                
-                // Cập nhật trạng thái sách
-                String updateTrangThaiSachSQL = "UPDATE Sach SET TrangThai = 1 WHERE MaSach = ?";
-                pstmtUpdateTrangThai = conn.prepareStatement(updateTrangThaiSachSQL);
-                
+
                 for (String tenSach : bookTitles) {
                     pstmtFindMaSach.setString(1, tenSach);
                     rsMaSach = pstmtFindMaSach.executeQuery();
+
                     while (rsMaSach.next()) {
-                        String maSach = rsMaSach.getString("MaSach");
-                        pstmtSachPhieuMuon.setString(1, maSach);
+                        int maSach = rsMaSach.getInt("MaSach");
+
+                        pstmtSachPhieuMuon.setInt(1, maSach);
                         pstmtSachPhieuMuon.setInt(2, maPM);
                         pstmtSachPhieuMuon.executeUpdate();
-                        
-                        pstmtUpdateTrangThai.setString(1, maSach);
-                        pstmtUpdateTrangThai.executeUpdate();
+
+                        BookContext bookContext = new BookContext(conn);
+                        bookContext.setState(new BorrowedState());
+                        bookContext.updateSachStatus(maSach, maPM);
                     }
                 }
-                
+
                 conn.commit();
                 return true;
             }
@@ -146,7 +143,6 @@ public class BorrowedTicketDAO {
                 if (pstmtFindMaSach != null) pstmtFindMaSach.close();
                 if (pstmtSachPhieuMuon != null) pstmtSachPhieuMuon.close();
                 if (pstmtPhieuMuon != null) pstmtPhieuMuon.close();
-                if (pstmtUpdateTrangThai != null) pstmtUpdateTrangThai.close();
                 conn.setAutoCommit(true);
             } catch (SQLException closeEx) {
                 closeEx.printStackTrace();
