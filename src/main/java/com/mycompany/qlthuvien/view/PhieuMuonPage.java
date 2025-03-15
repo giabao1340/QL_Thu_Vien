@@ -2,9 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.view;
 
-import com.mycompany.qlthuvien.ChiTietPhieuMuon;
+import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
+import com.mycompany.qlthuvien.model.BorrowedTicket;
+import com.mycompany.qlthuvien.view.ChiTietPhieuMuon;
 import javax.swing.DefaultListModel;
 import java.awt.BorderLayout;
 import java.awt.Font;

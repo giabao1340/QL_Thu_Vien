@@ -1,10 +1,11 @@
 
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.state;
 
 /**
  *
  * @author luong
  */
+import com.mycompany.qlthuvien.DatabaseConnection;
 import java.sql.Connection;
 
 public class BookContext {//Mượn - Trả - Mất

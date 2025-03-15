@@ -1,4 +1,4 @@
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.test;
 
 import javax.swing.*;
 import java.awt.*;

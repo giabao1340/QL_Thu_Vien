@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.view;
 
+import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.dao.MemberDao;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;

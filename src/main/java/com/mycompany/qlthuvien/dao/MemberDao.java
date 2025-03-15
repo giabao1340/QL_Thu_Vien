@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.dao;
 
+import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.model.Member;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

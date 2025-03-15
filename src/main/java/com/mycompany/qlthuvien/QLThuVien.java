@@ -3,6 +3,7 @@
  */
 
 package com.mycompany.qlthuvien;
+import com.mycompany.qlthuvien.view.LoginForm;
 import javax.swing.*;
 
     public class QLThuVien {

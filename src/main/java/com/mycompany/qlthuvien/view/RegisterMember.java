@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.view;
 
+import com.mycompany.qlthuvien.dao.MemberDao;
+import com.mycompany.qlthuvien.model.Member;
 import java.awt.Color;
 import java.awt.Image;
 import java.io.ByteArrayInputStream;
@@ -126,7 +128,6 @@ public class RegisterMember extends javax.swing.JFrame {
         jLabel1.setOpaque(true);
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 0, 0));
         jLabel3.setText("Họ và tên");
 
         nameTXT.setBackground(new java.awt.Color(245, 247, 248));
@@ -134,16 +135,13 @@ public class RegisterMember extends javax.swing.JFrame {
         nameTXT.setPreferredSize(new java.awt.Dimension(65, 30));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
         jLabel4.setText("Ngày sinh");
 
         birthDob.setBackground(new java.awt.Color(245, 247, 248));
-        birthDob.setForeground(new java.awt.Color(0, 0, 0));
         birthDob.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
         birthDob.setPreferredSize(new java.awt.Dimension(65, 30));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(0, 0, 0));
         jLabel5.setText("Email");
 
         emailTXT.setBackground(new java.awt.Color(245, 247, 248));
@@ -151,11 +149,9 @@ public class RegisterMember extends javax.swing.JFrame {
         emailTXT.setPreferredSize(new java.awt.Dimension(65, 30));
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel6.setForeground(new java.awt.Color(0, 0, 0));
         jLabel6.setText("Ngày lập thẻ");
 
         createDob.setBackground(new java.awt.Color(245, 247, 248));
-        createDob.setForeground(new java.awt.Color(0, 0, 0));
         createDob.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
 
         btnAdd.setBackground(new java.awt.Color(102, 102, 255));
@@ -170,12 +166,10 @@ public class RegisterMember extends javax.swing.JFrame {
         });
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel8.setForeground(new java.awt.Color(0, 0, 0));
         jLabel8.setText("Giới tính");
 
         cbGender.setBackground(new java.awt.Color(245, 247, 248));
         cbGender.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        cbGender.setForeground(new java.awt.Color(0, 0, 0));
         cbGender.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nam", "Nữ" }));
         cbGender.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         cbGender.addActionListener(new java.awt.event.ActionListener() {
@@ -199,20 +193,16 @@ public class RegisterMember extends javax.swing.JFrame {
         memAvatar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel9.setForeground(new java.awt.Color(0, 0, 0));
         jLabel9.setText("Ngày hết hạn");
 
         expiryDob.setBackground(new java.awt.Color(245, 247, 248));
-        expiryDob.setForeground(new java.awt.Color(0, 0, 0));
         expiryDob.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
 
         jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel10.setForeground(new java.awt.Color(0, 0, 0));
         jLabel10.setText("Trạng thái");
 
         cbStatus.setBackground(new java.awt.Color(245, 247, 248));
         cbStatus.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        cbStatus.setForeground(new java.awt.Color(0, 0, 0));
         cbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "1" }));
         cbStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

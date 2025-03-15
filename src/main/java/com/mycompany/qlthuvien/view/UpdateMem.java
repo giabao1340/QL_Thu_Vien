@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.view;
 
+import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.dao.MemberDao;
 import java.awt.Color;
 import java.awt.Image;
 import java.io.ByteArrayOutputStream;
@@ -188,47 +190,36 @@ public class UpdateMem extends javax.swing.JFrame {
         lblUpdate.setOpaque(true);
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(0, 0, 0));
         jLabel2.setText("Mã Độc Giả");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(0, 0, 0));
         jLabel3.setText("Họ và tên");
 
         upNameTXT.setBackground(new java.awt.Color(245, 247, 248));
         upNameTXT.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        upNameTXT.setForeground(new java.awt.Color(0, 0, 0));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(0, 0, 0));
         jLabel4.setText("Ngày sinh");
 
         upBirthDob.setBackground(new java.awt.Color(245, 247, 248));
-        upBirthDob.setForeground(new java.awt.Color(0, 0, 0));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(0, 0, 0));
         jLabel5.setText("Email");
 
         upEmailTXT.setBackground(new java.awt.Color(245, 247, 248));
         upEmailTXT.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        upEmailTXT.setForeground(new java.awt.Color(0, 0, 0));
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel6.setForeground(new java.awt.Color(0, 0, 0));
         jLabel6.setText("Ngày lập thẻ");
 
         jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel9.setForeground(new java.awt.Color(0, 0, 0));
         jLabel9.setText("Ngày hết hạn");
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel8.setForeground(new java.awt.Color(0, 0, 0));
         jLabel8.setText("Giới tính");
 
         upCbGender.setBackground(new java.awt.Color(245, 247, 248));
         upCbGender.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        upCbGender.setForeground(new java.awt.Color(0, 0, 0));
         upCbGender.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Nam", "Nữ" }));
         upCbGender.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -238,7 +229,6 @@ public class UpdateMem extends javax.swing.JFrame {
 
         upCbStatus.setBackground(new java.awt.Color(245, 247, 248));
         upCbStatus.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        upCbStatus.setForeground(new java.awt.Color(0, 0, 0));
         upCbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "1", " " }));
         upCbStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -247,11 +237,9 @@ public class UpdateMem extends javax.swing.JFrame {
         });
 
         jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel10.setForeground(new java.awt.Color(0, 0, 0));
         jLabel10.setText("Trạng thái");
 
         upMaDocGia.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        upMaDocGia.setForeground(new java.awt.Color(0, 0, 0));
         upMaDocGia.setText("...");
 
         btnUpdate.setBackground(new java.awt.Color(0, 204, 0));

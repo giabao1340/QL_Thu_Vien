@@ -1,4 +1,4 @@
-package com.mycompany.qlthuvien;
+package com.mycompany.qlthuvien.model;
 
 public class Book {
     private int maSach;
