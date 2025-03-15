@@ -484,7 +484,6 @@ public class PhieuMuonPage extends javax.swing.JFrame {
             return;
         }
 
-        int maDocGia;
         try {
             maDocGia = Integer.parseInt(maDocGiaStr);
         } catch (NumberFormatException e) {
@@ -500,7 +499,6 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         ticket.setNgayTraDuKien(ngayTra);
         ticket.setMaDocGia(maDocGia);
         ticket.setTrangThai(0); // Hoặc giá trị trạng thái khác theo yêu cầu
-
         BorrowedTicketDAO dao = new BorrowedTicketDAO();
 
         List<String> bookTitles = listTenSach.getSelectedValuesList(); // Lấy danh sách sách đã chọn
@@ -813,7 +811,7 @@ public class PhieuMuonPage extends javax.swing.JFrame {
                 // Tính toán Trạng thái dựa trên ngày trả và ngày hiện tại
                 Date currentDate = new Date();
 
-                updatePhieuMuonStatus(maPM);
+//                updatePhieuMuonStatus(maPM);
                 if (ngayTra != null) {
                     if (ngayTra.compareTo(currentDate) >= 0 && ngayTraTT == null) {
                         trangThai = "Còn hạn trả";
@@ -849,7 +847,7 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         // Câu lệnh SQL để cập nhật trạng thái dựa trên MaPM
         String updateQuery = "UPDATE PhieuMuon "
                 + "SET TrangThai = CASE "
-                + "    WHEN NgayTraThucTe IS NOT NULL THEN 2 "
+                + "    WHEN NgayTraThucTe IS NOT NULL THEN 1 "
                 + "    WHEN NgayTraDuKien < GETDATE() THEN 1 "
                 + "    WHEN NgayTraDuKien >= GETDATE() THEN 0 "
                 + "    ELSE TrangThai "
