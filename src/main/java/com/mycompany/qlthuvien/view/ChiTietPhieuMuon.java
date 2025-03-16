@@ -4,8 +4,11 @@
  */
 package com.mycompany.qlthuvien.view;
 
+import EmailStrategy.EmailContext;
+import EmailStrategy.ReturnSuccessEmail;
 import com.mycompany.qlthuvien.state.BookContext;
 import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
 import com.mycompany.qlthuvien.state.LostState;
 import com.mycompany.qlthuvien.state.ReturnedState;
 import javax.swing.*;
@@ -20,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 import javax.mail.Authenticator;
@@ -32,7 +36,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-
+import java.util.List;
 public class ChiTietPhieuMuon extends javax.swing.JFrame {
 
     private String ngayMuon, ngayTra, tenPM, ngayTraTT, tienPhat, tenDocGia, tenSach;
@@ -317,22 +321,44 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
     }
 
 private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
-    int selectedRow = tableSachMuon.getSelectedRow();
+    int[] selectedRows = tableSachMuon.getSelectedRows(); // Lấy tất cả các dòng được chọn
+    if (selectedRows.length > 0) {
+        BorrowedTicketDAO dao = new BorrowedTicketDAO();
+        List<String> sachDaTra = new ArrayList<>();
 
-    if (selectedRow >= 0) {
-        int maSach = (int) tableSachMuon.getValueAt(selectedRow, 0);
+        for (int row : selectedRows) {
+            int maSach = (int) tableSachMuon.getValueAt(row, 0); // Lấy mã sách từ cột đầu tiên
 
-        if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
-            JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó");
-        } else {
-            BookContext bookContext = new BookContext(conn);
-            bookContext.setState(new ReturnedState());
-            bookContext.updateSachStatus(maSach, maPM);
+            if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
+                JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó: " + tableSachMuon.getValueAt(row, 1));
+            } else {
+                BookContext bookContext = new BookContext(conn);
+                bookContext.setState(new ReturnedState());
+                bookContext.updateSachStatus(maSach, maPM);
+                sachDaTra.add(tableSachMuon.getValueAt(row, 1).toString()); // Lấy tên sách từ cột thứ 2
+            }
+        }
+
+        // Gửi email xác nhận trả sách
+        if (!sachDaTra.isEmpty()) {
+            String docGiaEmail = dao.getReaderEmailByPhieuMuon(maPM);
+            Date ngayMuon = dao.getNgayMuonByPhieuMuon(maPM);
+            Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
+
+            if (docGiaEmail != null && !docGiaEmail.isEmpty()) {
+                EmailContext emailContext = new EmailContext();
+                emailContext.setStrategy(new ReturnSuccessEmail());
+                emailContext.sendEmail(docGiaEmail, ngayMuon, ngayTra, sachDaTra);
+            }
+
+            JOptionPane.showMessageDialog(null, "Trả sách thành công!");
         }
     } else {
-        JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để trả sách.");
+        JOptionPane.showMessageDialog(null, "Vui lòng chọn ít nhất một sách để trả.");
     }
 }
+
+
 
 
 private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
@@ -420,23 +446,7 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
         return email;
     }
 
-    public String getTenSachFromMaSach(int maSach) {
-        String tenSach = null;
-        String query = "SELECT TenSach FROM Sach WHERE MaSach = ?";
 
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            pstmt.setInt(1, maSach);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    tenSach = rs.getString("TenSach");
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return tenSach;
-    }
 
     public int getTrangThaiTuMaPM(int maPM) {
         int trangThai1 = 0;
@@ -504,104 +514,6 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
             e.printStackTrace();
         }
     }
-
-//    private void updateSachStatus(int maSach2) {
-//        // Cập nhật trạng thái sách thành 0 (Trả thành công)
-//        String updateSachQuery = "UPDATE Sach SET TrangThai = 0 WHERE MaSach = ?";
-//
-//        // Cập nhật ngày trả thực tế trong bảng PhieuMuon
-//        String updatePhieuMuonQuery = "UPDATE PhieuMuon SET NgayTraThucTe = GETDATE() WHERE MaPM = ?";
-//
-//        // Truy vấn để lấy ngày trả thực tế
-//        String selectNgayTraThucTeQuery = "SELECT NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
-//
-//        try {
-//            // Cập nhật trạng thái sách
-//            try (PreparedStatement pstmtUpdateSach = conn.prepareStatement(updateSachQuery)) {
-//                pstmtUpdateSach.setInt(1, maSach2);
-//                pstmtUpdateSach.executeUpdate(); // Thực thi cập nhật trạng thái sách
-//            }
-//
-//            // Cập nhật ngày trả thực tế
-//            try (PreparedStatement pstmtUpdatePhieuMuon = conn.prepareStatement(updatePhieuMuonQuery)) {
-//                pstmtUpdatePhieuMuon.setInt(1, maPM);
-//                int rowsAffected = pstmtUpdatePhieuMuon.executeUpdate();
-//
-//                if (rowsAffected > 0) {
-//                    // Lấy ngày trả thực tế để cập nhật vào JTextField
-//                    try (PreparedStatement pstmtSelect = conn.prepareStatement(selectNgayTraThucTeQuery)) {
-//                        pstmtSelect.setInt(1, maPM);
-//                        try (ResultSet rs = pstmtSelect.executeQuery()) {
-//                            if (rs.next()) {
-//                                Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
-//                                // Định dạng ngày để hiển thị
-//                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//                                String formattedDate = sdf.format(ngayTraThucTe);
-//                                txtNgayTraThucTe.setText(formattedDate);
-//                            } else {
-//                                txtNgayTraThucTe.setText("Không có dữ liệu");
-//                            }
-//                        }
-//                    }
-//
-//                } else {
-//                    txtNgayTraThucTe.setText("Không có dữ liệu");
-//                }
-//            }
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private void updateSachStatusforLostBook(int maSach2) {
-//        // Cập nhật trạng thái sách thành 0 (Trả thành công)
-//        String updateSachQuery = "UPDATE Sach SET TrangThai = 2 WHERE MaSach = ?";
-//
-//        // Cập nhật ngày trả thực tế trong bảng PhieuMuon
-//        String updatePhieuMuonQuery = "UPDATE PhieuMuon SET NgayTraThucTe = GETDATE() WHERE MaPM = ?";
-//
-//        // Truy vấn để lấy ngày trả thực tế
-//        String selectNgayTraThucTeQuery = "SELECT NgayTraThucTe FROM PhieuMuon WHERE MaPM = ?";
-//
-//        try {
-//            // Cập nhật trạng thái sách
-//            try (PreparedStatement pstmtUpdateSach = conn.prepareStatement(updateSachQuery)) {
-//                pstmtUpdateSach.setInt(1, maSach2);
-//                pstmtUpdateSach.executeUpdate(); // Thực thi cập nhật trạng thái sách
-//            }
-//
-//            // Cập nhật ngày trả thực tế
-//            try (PreparedStatement pstmtUpdatePhieuMuon = conn.prepareStatement(updatePhieuMuonQuery)) {
-//                pstmtUpdatePhieuMuon.setInt(1, maPM);
-//                int rowsAffected = pstmtUpdatePhieuMuon.executeUpdate();
-//
-//                if (rowsAffected > 0) {
-//                    // Lấy ngày trả thực tế để cập nhật vào JTextField
-//                    try (PreparedStatement pstmtSelect = conn.prepareStatement(selectNgayTraThucTeQuery)) {
-//                        pstmtSelect.setInt(1, maPM);
-//                        try (ResultSet rs = pstmtSelect.executeQuery()) {
-//                            if (rs.next()) {
-//                                Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
-//                                // Định dạng ngày để hiển thị
-//                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//                                String formattedDate = sdf.format(ngayTraThucTe);
-//                                txtNgayTraThucTe.setText(formattedDate);
-//                            } else {
-//                                txtNgayTraThucTe.setText("Không có dữ liệu");
-//                            }
-//                        }
-//                    }
-//
-//                } else {
-//                    txtNgayTraThucTe.setText("Không có dữ liệu");
-//                }
-//            }
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     private void calculateAndUpdatePenalty(int maPM) {
         String selectQuery = "SELECT NgayTraDuKien, NgayTraThucTe "
@@ -745,89 +657,6 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
         return false;
     }
 
-    private void sendEmail(int maSach1, int tra_mat) {
-        // Đọc thông tin cấu hình và tài khoản email từ cơ sở dữ liệu
-        String host = "smtp.gmail.com";
-        String port = "587";
-        String username = "ascf5649@gmail.com";
-        String password = "qyed tqed tlbe frad"; // Thay thế bằng App Password
-
-        // Cấu hình các thuộc tính SMTP
-        Properties properties = new Properties();
-        properties.put("mail.smtp.host", host);
-        properties.put("mail.smtp.port", port);
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true");
-
-        // Tạo một phiên làm việc với các thuộc tính đã cấu hình
-        Session session = Session.getInstance(properties, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(username, password);
-            }
-        });
-
-        try {
-            // Tạo một đối tượng MimeMessage
-            Message msg = new MimeMessage(session);
-
-            // Đặt địa chỉ người gửi
-            msg.setFrom(new InternetAddress(username));
-            // Lấy danh sách tên sách đã mượn
-            String tenSachdamuon = getTenSachFromMaSach(maSach1);
-
-            // Kiểm tra và sử dụng giá trị email đã được cập nhật từ hàm searchReaderEmail()
-            if (email.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Không tìm được email của độc giả");
-                return;
-            }
-
-            // Đặt địa chỉ người nhận là email của độc giả
-            msg.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
-
-            // Đặt tiêu đề email
-            // Xây dựng nội dung email
-            StringBuilder emailContent = new StringBuilder();
-
-            if (tra_mat == 1) {
-                msg.setSubject("Trả sách đúng hạn");
-                emailContent.append("Nội dung email:\n");
-                emailContent.append("Mã độc giả: " + maDocGia + "\n");
-                emailContent.append("Họ tên: " + tenDocGia + "\n");
-                emailContent.append("Bạn đã trả sách " + "" + tenSachdamuon + " thành công!" + "\n");
-            } else if (tra_mat == 2) {
-                msg.setSubject("Trả sách trễ hạn");
-                emailContent.append("Nội dung email:\n");
-                emailContent.append("Mã độc giả: " + maDocGia + "\n");
-                emailContent.append("Họ tên: " + tenDocGia + "\n");
-                emailContent.append("Bạn đã trả sách " + "" + tenSachdamuon + " thành công!" + "\n");
-                emailContent.append("Phí phạt do trả sách trễ là:" + "\n");
-                emailContent.append("-" + tienphat + " VND" + "\n");
-            } else if (tra_mat == 3) {
-                msg.setSubject("Mất sách");
-                emailContent.append("Nội dung email:\n");
-                emailContent.append("Mã độc giả: " + maDocGia + "\n");
-                emailContent.append("Họ tên: " + tenDocGia + "\n");
-                emailContent.append("Sách mất:" + "\n");
-                emailContent.append("-" + tenSachdamuon + "\n");
-                emailContent.append("Phí phạt là:" + "\n");
-                emailContent.append("-" + tienphat2 + " VND" + "\n");
-            }
-
-            // Đặt nội dung email
-            msg.setText(emailContent.toString());
-
-            // Gửi email
-            Transport.send(msg);
-
-            JOptionPane.showMessageDialog(this, "Email đã được gửi thành công đến: " + email);
-
-        } catch (NumberFormatException | MessagingException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi gửi email: " + e.getMessage());
-        }
-
-    }
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {

@@ -9,25 +9,24 @@ import com.mycompany.qlthuvien.state.BorrowedState;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.model.BorrowedTicket;
 import java.sql.Connection;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author luong
  */
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JTable;
 
 public class BorrowedTicketDAO {
-    private Connection conn;
+    private final Connection conn;
     public BorrowedTicketDAO() {
         DatabaseConnection dbConnection = DatabaseConnection.getInstance();
         this.conn = dbConnection.getConnection(); 
@@ -51,7 +50,6 @@ public class BorrowedTicketDAO {
                 tickets.add(ticket);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return tickets;
     }
@@ -75,7 +73,6 @@ public class BorrowedTicketDAO {
                 return true;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
         }
         return false;
     }
@@ -89,7 +86,7 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
             conn.setAutoCommit(false);
 
             // Thêm phiếu mượn vào bảng PhieuMuon
-            String insertPhieuMuonSQL = "INSERT INTO PhieuMuon (NgayMuon, NgayTraDuKien, MaDocGia) VALUES (?, ?, ?)";
+            String insertPhieuMuonSQL = "INSERT INTO PhieuMuon (NgayMuon, NgayTraDuKien, MaDocGia, TrangThai) VALUES (?, ?, ?, 0)";
             pstmtPhieuMuon = conn.prepareStatement(insertPhieuMuonSQL, Statement.RETURN_GENERATED_KEYS);
             pstmtPhieuMuon.setDate(1, (Date) ticket.getNgayMuon());
             pstmtPhieuMuon.setDate(2, (Date) ticket.getNgayTraDuKien());
@@ -124,7 +121,7 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
                         pstmtSachPhieuMuon.setInt(1, maSach);
                         pstmtSachPhieuMuon.setInt(2, maPM);
                         pstmtSachPhieuMuon.executeUpdate();
-
+                        //Set state
                         BookContext bookContext = new BookContext(conn);
                         bookContext.setState(new BorrowedState());
                         bookContext.updateSachStatus(maSach, maPM);
@@ -154,4 +151,58 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
         }
         return false;
     }
+
+    public String getReaderEmailByPhieuMuon(int maPM) {
+        String email = null;
+        String query = "SELECT dg.Email FROM DocGia dg " +
+                       "JOIN PhieuMuon pm ON dg.MaDocGia = pm.MaDocGia " +
+                       "WHERE pm.MaPM = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, maPM);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                email = rs.getString("Email");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(BorrowedTicketDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return email;
+    }
+            public java.util.Date getNgayMuonByPhieuMuon(int maPM) {
+            String query = "SELECT NgayMuon FROM PhieuMuon WHERE MaPM = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, maPM);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getDate("NgayMuon");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        public java.util.Date getNgayTraByPhieuMuon(int maPM) {
+            String query = "SELECT NgayTraDuKien FROM PhieuMuon WHERE MaPM = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, maPM);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getDate("NgayTraDuKien");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        public List<String> getReturnedBooks(JTable tableSachMuon) {
+            List<String> returnedBooks = new ArrayList<>();
+            int[] selectedRows = tableSachMuon.getSelectedRows();
+
+            for (int row : selectedRows) {
+                String tenSach = tableSachMuon.getValueAt(row, 1).toString(); // Cột thứ 2 là tên sách
+                returnedBooks.add(tenSach);
+            }
+            return returnedBooks;
+        }
+
 }

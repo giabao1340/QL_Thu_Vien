@@ -4,6 +4,8 @@
  */
 package com.mycompany.qlthuvien.view;
 
+import EmailStrategy.BorrowSuccessEmail;
+import EmailStrategy.EmailContext;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
 import com.mycompany.qlthuvien.model.BorrowedTicket;
@@ -501,138 +503,27 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         ticket.setNgayMuon(ngayMuon);
         ticket.setNgayTraDuKien(ngayTra);
         ticket.setMaDocGia(maDocGia);
-        ticket.setTrangThai(0); // Hoặc giá trị trạng thái khác theo yêu cầu
+        ticket.setTrangThai(0); 
         BorrowedTicketDAO dao = new BorrowedTicketDAO();
 
-        List<String> bookTitles = listTenSach.getSelectedValuesList(); // Lấy danh sách sách đã chọn
+        List<String> bookTitles = listTenSach.getSelectedValuesList();
 
         if (dao.addBorrowedTicketWithBooks(ticket, bookTitles)) {
             JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
             updateTableData();
             loadListTenSach();
+
+            // Gửi email
+            String docGiaEmail = dao.getReaderEmailByPhieuMuon(ticket.getMaPM());
+            if (docGiaEmail != null && !docGiaEmail.isEmpty()) {
+                EmailContext emailContext = new EmailContext();
+                emailContext.setStrategy(new BorrowSuccessEmail());
+                emailContext.sendEmail(docGiaEmail, ngayMuon, ngayTra, bookTitles);
+            }
         } else {
             JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thất bại.");
         }
     }
-
-    
-//    private void saveBorrowingInfo() {
-//        String maDocGia = txtMaDocGia.getText();
-//        if (maDocGia.isEmpty()) {
-//            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã độc giả.");
-//            return;
-//        }
-//        java.util.Date ngayMuon = txtNgayMuon.getDate();
-//        java.util.Date ngayTra = txtNgayTra.getDate();
-//
-//        if (ngayMuon == null || ngayTra == null) {
-//            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày mượn và ngày trả.");
-//            return;
-//        }
-//
-//        if (ngayTra.before(ngayMuon)) {
-//            JOptionPane.showMessageDialog(this, "Ngày trả phải lớn hơn ngày mượn.");
-//            return;
-//        }
-//        PreparedStatement pstmtPhieuMuon = null;
-//        PreparedStatement pstmtSachPhieuMuon = null;
-//        PreparedStatement pstmtFindMaSach = null;
-//        ResultSet rsMaSach = null;
-//        PreparedStatement pstmtUpdateTrangThai = null;
-//
-//        try {
-//            conn.setAutoCommit(false); // Bắt đầu transaction
-//
-//            // Thêm vào bảng PhieuMuon
-//            String insertPhieuMuonSQL = "INSERT INTO PhieuMuon (NgayMuon, NgayTraDuKien, MaDocGia) VALUES (?, ?, ?)";
-//            pstmtPhieuMuon = conn.prepareStatement(insertPhieuMuonSQL, Statement.RETURN_GENERATED_KEYS);
-//            pstmtPhieuMuon.setDate(1, new java.sql.Date(ngayMuon.getTime()));
-//            pstmtPhieuMuon.setDate(2, new java.sql.Date(ngayTra.getTime()));
-//            pstmtPhieuMuon.setString(3, maDocGia);
-//
-//            int rowsInsertedPhieuMuon = pstmtPhieuMuon.executeUpdate();
-//
-//            if (rowsInsertedPhieuMuon > 0) {
-//                System.out.println("Thêm phiếu mượn thành công.");
-//
-//                // Lấy mã phiếu mượn vừa được tạo tự động
-//                ResultSet generatedKeys = pstmtPhieuMuon.getGeneratedKeys();
-//                int maPM = -1;
-//                if (generatedKeys.next()) {
-//                    maPM = generatedKeys.getInt(1);
-//                }
-//                updatePhieuMuonStatus(maPM);
-//                generatedKeys.close();
-//
-//                // Tìm mã sách từ tên sách
-//                String findMaSachSQL = "SELECT MaSach FROM Sach WHERE TenSach = ?";
-//                pstmtFindMaSach = conn.prepareStatement(findMaSachSQL);
-//
-//                // Thêm vào bảng Sach_PhieuMuon
-//                String insertSachPhieuMuonSQL = "INSERT INTO Sach_PhieuMuon (MaSach, MaPM) VALUES (?, ?)";
-//                pstmtSachPhieuMuon = conn.prepareStatement(insertSachPhieuMuonSQL);
-//
-//                // Cập nhật trạng thái sách
-//                String updateTrangThaiSachSQL = "UPDATE Sach SET TrangThai = 1 WHERE MaSach = ?";
-//                pstmtUpdateTrangThai = conn.prepareStatement(updateTrangThaiSachSQL);
-//
-//                for (String tenSach : listTenSach.getSelectedValuesList()) {
-//                    pstmtFindMaSach.setString(1, tenSach);
-//                    rsMaSach = pstmtFindMaSach.executeQuery();
-//                    while (rsMaSach.next()) {
-//                        String maSach = rsMaSach.getString("MaSach");
-//                        pstmtSachPhieuMuon.setString(1, maSach);
-//                        pstmtSachPhieuMuon.setInt(2, maPM);
-//                        pstmtSachPhieuMuon.executeUpdate();
-//
-//                        // Cập nhật trạng thái sách
-//                        
-//                        pstmtUpdateTrangThai.setString(1, maSach);
-//                        pstmtUpdateTrangThai.executeUpdate();
-//                    }
-//                }
-//
-//                conn.commit(); // Commit transaction
-//                JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
-//
-//                // Sau khi thêm thành công, cập nhật lại dữ liệu trên JTable
-//                updateTableData();
-//                loadListTenSach();
-//
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Thêm phiếu mượn thất bại.");
-//            }
-//
-//        } catch (SQLException ex) {
-//            try {
-//                conn.rollback(); // Rollback transaction nếu có lỗi
-//            } catch (SQLException rollbackEx) {
-//                System.out.println("Rollback thất bại: " + rollbackEx.getMessage());
-//            }
-//            JOptionPane.showMessageDialog(this, "Lỗi khi thêm phiếu mượn: " + ex.getMessage());
-//        } finally {
-//            try {
-//                if (rsMaSach != null) {
-//                    rsMaSach.close();
-//                }
-//                if (pstmtFindMaSach != null) {
-//                    pstmtFindMaSach.close();
-//                }
-//                if (pstmtSachPhieuMuon != null) {
-//                    pstmtSachPhieuMuon.close();
-//                }
-//                if (pstmtPhieuMuon != null) {
-//                    pstmtPhieuMuon.close();
-//                }
-//                if (pstmtUpdateTrangThai != null) {
-//                    pstmtUpdateTrangThai.close();
-//                }
-//                conn.setAutoCommit(true); // Thiết lập lại AutoCommit về true
-//            } catch (SQLException closeEx) {
-//                System.out.println("Lỗi khi đóng PreparedStatement: " + closeEx.getMessage());
-//            }
-//        }
-//    }
 
     private void loadListTenSach() {
         DefaultListModel<String> listModel = new DefaultListModel<>();
