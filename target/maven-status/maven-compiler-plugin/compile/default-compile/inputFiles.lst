@@ -21,10 +21,10 @@ D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\MemberForm.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\PhieuMuonPage.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\RegisterMember.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\UpdateMem.java
-D:\QLThuVien\src\main\java\EmailStrategy\BorrowSuccessEmail.java
-D:\QLThuVien\src\main\java\EmailStrategy\DueDateReminderEmail.java
-D:\QLThuVien\src\main\java\EmailStrategy\EmailContext.java
-D:\QLThuVien\src\main\java\EmailStrategy\EmailService.java
-D:\QLThuVien\src\main\java\EmailStrategy\EmailStrategy.java
-D:\QLThuVien\src\main\java\EmailStrategy\OverdueEmail.java
-D:\QLThuVien\src\main\java\EmailStrategy\ReturnSuccessEmail.java
+D:\QLThuVien\src\main\java\FactoryMethod\BorrowConfirmationEmail.java
+D:\QLThuVien\src\main\java\FactoryMethod\EmailFactory.java
+D:\QLThuVien\src\main\java\FactoryMethod\EmailSender.java
+D:\QLThuVien\src\main\java\FactoryMethod\EmailTemplate.java
+D:\QLThuVien\src\main\java\FactoryMethod\OverdueEmail.java
+D:\QLThuVien\src\main\java\FactoryMethod\ReminderEmail.java
+D:\QLThuVien\src\main\java\FactoryMethod\ReturnConfirmationEmail.java

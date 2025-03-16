@@ -149,4 +149,23 @@ public class MemberDao {
             }
         }
     }
+
+    public String getEmailByReaderId(int maDocGia) {
+        String email = null;
+        String sql = "SELECT Email FROM DocGia WHERE MaDocGia = ?";
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        Connection connection = dbConnection.getConnection();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, maDocGia);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    email = rs.getString("Email");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return email;
+    }
 }

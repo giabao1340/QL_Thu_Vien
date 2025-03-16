@@ -2,15 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package EmailStrategy;
+package FactoryMethod;
 
-import java.util.Date;
+import com.mycompany.qlthuvien.model.BorrowedTicket;
 import java.util.List;
 
 /**
  *
  * @author luong
  */
-public interface EmailStrategy {
-    void sendEmail(String to, Date ngayMuon, Date ngayTra, List<String> sachDaMuon);
+public interface EmailTemplate {
+    String createEmailContent();
 }
