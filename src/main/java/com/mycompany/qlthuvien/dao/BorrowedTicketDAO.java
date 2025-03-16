@@ -205,4 +205,58 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
             return returnedBooks;
         }
 
+    public double tinhPhi(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon) {
+        // Tính số ngày đã mượn
+        long daysBorrowed = (ngayTraThucTe.getTime() - ngayMuon.getTime()) / (1000 * 60 * 60 * 24);
+        // Tính số ngày quá hạn
+        long daysLate = (ngayTraThucTe.getTime() - ngayTra.getTime()) / (1000 * 60 * 60 * 24);
+
+        // Tính số tuần mượn (lấy phần nguyên)
+        int weeksBorrowed = (int) Math.ceil(daysBorrowed / 7.0);
+        double phi;
+        if (weeksBorrowed < 7) {
+            phi = 3000 * soSachMuon;
+        } else {
+            phi = weeksBorrowed * 5000 * soSachMuon;
+        }
+        
+
+        // Tính tiền phạt
+        double phat =tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+        return phi + phat;
+    }
+    public double tinhTienPhat(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon) {
+        // Tính số ngày đã mượn
+        long daysBorrowed = (ngayTraThucTe.getTime() - ngayMuon.getTime()) / (1000 * 60 * 60 * 24);
+        // Tính số ngày quá hạn
+        long daysLate = (ngayTraThucTe.getTime() - ngayTra.getTime()) / (1000 * 60 * 60 * 24);
+
+        // Tính số tuần mượn (lấy phần nguyên)
+        int weeksBorrowed = (int) Math.ceil(daysBorrowed / 7.0);
+        // Tính tiền phạt
+        double phat = 0;
+        if (daysLate > 0) {
+            if (daysLate <= 6) {
+                phat = 3000 * soSachMuon;
+            } else {
+                int weeksLate = (int) Math.ceil(daysLate / 7.0);
+                phat = weeksLate * 5000 * soSachMuon;
+            }
+        }
+        // Tổng phí
+        return  phat;
+    }
+    public boolean capNhatPhi(int maPhieuMuon, double phi, double tienPhat) {
+        String sql = "UPDATE PhieuMuon SET Phi = ?, TienPhat = ? WHERE MaPM = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, phi);
+            stmt.setDouble(2, tienPhat);
+            stmt.setInt(3, maPhieuMuon);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

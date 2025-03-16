@@ -320,38 +320,45 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
         dispose();
     }
 
-private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
-    int[] selectedRows = tableSachMuon.getSelectedRows(); // Lấy tất cả các dòng được chọn
+    private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
+    int[] selectedRows = tableSachMuon.getSelectedRows();
     if (selectedRows.length > 0) {
         BorrowedTicketDAO dao = new BorrowedTicketDAO();
         List<String> sachDaTra = new ArrayList<>();
+        int soSachMuon = selectedRows.length;
 
+        Date ngayTraThucTe = new Date();
+        Date ngayMuon = dao.getNgayMuonByPhieuMuon(maPM);
+        Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
+
+        double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+        double phat = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
         for (int row : selectedRows) {
-            int maSach = (int) tableSachMuon.getValueAt(row, 0); // Lấy mã sách từ cột đầu tiên
-
+            int maSach = (int) tableSachMuon.getValueAt(row, 0);
             if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
                 JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó: " + tableSachMuon.getValueAt(row, 1));
             } else {
                 BookContext bookContext = new BookContext(conn);
                 bookContext.setState(new ReturnedState());
                 bookContext.updateSachStatus(maSach, maPM);
-                sachDaTra.add(tableSachMuon.getValueAt(row, 1).toString()); // Lấy tên sách từ cột thứ 2
+                sachDaTra.add(tableSachMuon.getValueAt(row, 1).toString());
             }
         }
+
+        // Cập nhật phí vào CSDL
+        dao.capNhatPhi(maPM, phi, phat);
 
         // Gửi email xác nhận trả sách
         if (!sachDaTra.isEmpty()) {
             String docGiaEmail = dao.getReaderEmailByPhieuMuon(maPM);
-            Date ngayMuon = dao.getNgayMuonByPhieuMuon(maPM);
-            Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
 
             if (docGiaEmail != null && !docGiaEmail.isEmpty()) {
                 EmailContext emailContext = new EmailContext();
                 emailContext.setStrategy(new ReturnSuccessEmail());
-                emailContext.sendEmail(docGiaEmail, ngayMuon, ngayTra, sachDaTra);
+                emailContext.sendEmail(docGiaEmail, ngayMuon, ngayTraThucTe, sachDaTra);
             }
 
-            JOptionPane.showMessageDialog(null, "Trả sách thành công!");
+            JOptionPane.showMessageDialog(null, "Trả sách thành công! Tổng phí: " + phi + " VND");
         }
     } else {
         JOptionPane.showMessageDialog(null, "Vui lòng chọn ít nhất một sách để trả.");
@@ -359,9 +366,7 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
 }
 
 
-
-
-private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
+    private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
     int selectedRow = tableSachMuon.getSelectedRow();
 
     if (selectedRow >= 0) {
@@ -515,109 +520,7 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
 
-    private void calculateAndUpdatePenalty(int maPM) {
-        String selectQuery = "SELECT NgayTraDuKien, NgayTraThucTe "
-                + "FROM PhieuMuon "
-                + "WHERE MaPM = ?";
-        String updateQuery = "UPDATE PhieuMuon SET TienPhat = ? WHERE MaPM = ?";
 
-        try {
-            // Tính tiền phạt
-            int penalty = 0;
-            try (PreparedStatement pstmt = conn.prepareStatement(selectQuery)) {
-                pstmt.setInt(1, maPM);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        Date ngayTraDuKien = rs.getDate("NgayTraDuKien");
-                        Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
-
-                        if (ngayTraThucTe != null && ngayTraThucTe.after(ngayTraDuKien)) {
-                            long diffInMillis = ngayTraThucTe.getTime() - ngayTraDuKien.getTime();
-                            long diffInDays = diffInMillis / (1000 * 60 * 60 * 24);  // Tính số ngày trễ
-                            penalty = (int) (diffInDays * 10000);
-                            tienphat = penalty;// Tiền phạt = số ngày trễ * 10000
-                        }
-                    }
-                }
-            }
-
-            // Cập nhật tiền phạt
-            try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-                pstmt.setInt(1, penalty);
-                pstmt.setInt(2, maPM);
-                int rowsAffected = pstmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    txtTienPhat.setText(String.valueOf(penalty));  // Cập nhật JTextField với giá trị tiền phạt
-                } else {
-                    txtTienPhat.setText("0");  // Nếu không tìm thấy, đặt tiền phạt thành 0
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void calculateAndUpdatePenaltyForLostBook(int maSach, int maPM) {
-        String selectBookPriceQuery = "SELECT GiaSach FROM Sach WHERE MaSach = ?";
-        String selectQuery = "SELECT NgayTraDuKien, NgayTraThucTe, TienPhat FROM PhieuMuon WHERE MaPM = ?";
-        String updateQuery = "UPDATE PhieuMuon SET TienPhat = ? WHERE MaPM = ?";
-
-        try {
-            // Lấy giá sách
-            double bookPrice = 0;
-            try (PreparedStatement pstmt = conn.prepareStatement(selectBookPriceQuery)) {
-                pstmt.setInt(1, maSach);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        bookPrice = rs.getDouble("GiaSach");
-                    }
-                }
-            }
-
-            // Tính tiền phạt cho sách bị mất
-            int additionalPenalty = (int) (0.8 * bookPrice);  // 80% của giá sách
-            tienphat2 = additionalPenalty;
-            // Tính tiền phạt hiện tại và cộng thêm tiền phạt mới
-            int totalPenalty = 0;
-            try (PreparedStatement pstmt = conn.prepareStatement(selectQuery)) {
-                pstmt.setInt(1, maPM);
-                try (ResultSet rs = pstmt.executeQuery()) {
-                    if (rs.next()) {
-                        Date ngayTraDuKien = rs.getDate("NgayTraDuKien");
-                        Date ngayTraThucTe = rs.getDate("NgayTraThucTe");
-                        int tienPhat = rs.getInt("TienPhat");
-
-                        // Tính tiền phạt trễ hạn
-                        if (ngayTraThucTe != null && ngayTraThucTe.after(ngayTraDuKien)) {
-                            long diffInMillis = ngayTraThucTe.getTime() - ngayTraDuKien.getTime();
-                            long diffInDays = diffInMillis / (1000 * 60 * 60 * 24);  // Tính số ngày trễ
-                            totalPenalty = (int) (diffInDays * 10000);  // Tiền phạt = số ngày trễ * 10000
-                        }
-
-                        // Cộng thêm tiền phạt cho sách bị mất
-                        totalPenalty += additionalPenalty;
-                    }
-                }
-            }
-
-            // Cập nhật tiền phạt vào bảng
-            try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-                pstmt.setInt(1, totalPenalty);
-                pstmt.setInt(2, maPM);
-                int rowsAffected = pstmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    txtTienPhat.setText(String.valueOf(totalPenalty));  // Cập nhật JTextField với tổng tiền phạt
-                } else {
-                    txtTienPhat.setText("0");  // Nếu không tìm thấy, đặt tiền phạt thành 0
-                }
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private boolean isSachAvailable(int maSach) {
         String query = "SELECT TrangThai FROM Sach WHERE MaSach = ?";
