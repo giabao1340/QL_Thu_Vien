@@ -3,12 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.qlthuvien.view;
-
-import EmailStrategy.EmailContext;
-import EmailStrategy.ReturnSuccessEmail;
+import FactoryMethod.EmailFactory;
+import FactoryMethod.EmailSender;
+import FactoryMethod.EmailTemplate;
 import com.mycompany.qlthuvien.state.BookContext;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
+import com.mycompany.qlthuvien.dao.MemberDao;
 import com.mycompany.qlthuvien.state.LostState;
 import com.mycompany.qlthuvien.state.ReturnedState;
 import javax.swing.*;
@@ -320,7 +321,7 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
         dispose();
     }
 
-    private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
+private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
     int[] selectedRows = tableSachMuon.getSelectedRows();
     if (selectedRows.length > 0) {
         BorrowedTicketDAO dao = new BorrowedTicketDAO();
@@ -332,7 +333,9 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
         Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
 
         double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
-        double phat = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+        double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+        double tongPhi = phi + tienPhat;
+
         for (int row : selectedRows) {
             int maSach = (int) tableSachMuon.getValueAt(row, 0);
             if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
@@ -345,25 +348,36 @@ public class ChiTietPhieuMuon extends javax.swing.JFrame {
             }
         }
 
-        // Cập nhật phí vào CSDL
-        dao.capNhatPhi(maPM, phi, phat);
+        // Sau khi cập nhật trạng thái sách thành công, gửi email
+        MemberDao readerDAO = new MemberDao();
+        String email = readerDAO.getEmailByReaderId(maDocGia);
 
-        // Gửi email xác nhận trả sách
-        if (!sachDaTra.isEmpty()) {
-            String docGiaEmail = dao.getReaderEmailByPhieuMuon(maPM);
+        if (email != null && !email.isEmpty()) {
+            EmailSender.send(
+                email,
+                "Xác nhận trả sách thành công",
+                EmailFactory.createEmail(
+                    "RETURN_CONFIRMATION", 
+                    ngayMuon, 
+                    ngayTra, 
+                    ngayTraThucTe, 
+                    sachDaTra, 
+                    phi, 
+                    tienPhat, 
+                    tongPhi
+                ).createEmailContent()
+            );
+            JOptionPane.showMessageDialog(this, "✅ Email xác nhận trả sách đã được gửi đến: " + email);
+        } else {
+            JOptionPane.showMessageDialog(this, "❌ Không tìm thấy email của độc giả.");
 
-            if (docGiaEmail != null && !docGiaEmail.isEmpty()) {
-                EmailContext emailContext = new EmailContext();
-                emailContext.setStrategy(new ReturnSuccessEmail());
-                emailContext.sendEmail(docGiaEmail, ngayMuon, ngayTraThucTe, sachDaTra);
-            }
-
-            JOptionPane.showMessageDialog(null, "Trả sách thành công! Tổng phí: " + phi + " VND");
+            System.out.println("❌ Không tìm thấy email của độc giả.");
         }
     } else {
         JOptionPane.showMessageDialog(null, "Vui lòng chọn ít nhất một sách để trả.");
     }
 }
+
 
 
     private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {

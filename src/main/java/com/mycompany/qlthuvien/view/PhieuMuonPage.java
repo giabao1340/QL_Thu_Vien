@@ -3,11 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.qlthuvien.view;
-
-import EmailStrategy.BorrowSuccessEmail;
-import EmailStrategy.EmailContext;
+import FactoryMethod.EmailFactory;
+import FactoryMethod.EmailSender;
+import FactoryMethod.EmailTemplate;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
+import com.mycompany.qlthuvien.dao.MemberDao;
 import com.mycompany.qlthuvien.model.BorrowedTicket;
 import com.mycompany.qlthuvien.view.ChiTietPhieuMuon;
 import javax.swing.DefaultListModel;
@@ -469,61 +470,67 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         }
     }
 
-    private void saveBorrowingInfo() {
-        String maDocGiaStr = txtMaDocGia.getText().trim();
-        if (maDocGiaStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã độc giả.");
-            return;
-        }
-
-        java.util.Date ngayMuonUtil = txtNgayMuon.getDate();
-        java.util.Date ngayTraUtil = txtNgayTra.getDate();
-
-        if (ngayMuonUtil == null || ngayTraUtil == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày mượn và ngày trả.");
-            return;
-        }
-
-        if (ngayTraUtil.before(ngayMuonUtil)) {
-            JOptionPane.showMessageDialog(this, "Ngày trả phải lớn hơn ngày mượn.");
-            return;
-        }
-
-        try {
-            maDocGia = Integer.parseInt(maDocGiaStr);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Mã độc giả phải là số.");
-            return;
-        }
-
-        java.sql.Date ngayMuon = new java.sql.Date(ngayMuonUtil.getTime());
-        java.sql.Date ngayTra = new java.sql.Date(ngayTraUtil.getTime());
-
-        BorrowedTicket ticket = new BorrowedTicket();
-        ticket.setNgayMuon(ngayMuon);
-        ticket.setNgayTraDuKien(ngayTra);
-        ticket.setMaDocGia(maDocGia);
-        ticket.setTrangThai(0); 
-        BorrowedTicketDAO dao = new BorrowedTicketDAO();
-
-        List<String> bookTitles = listTenSach.getSelectedValuesList();
-
-        if (dao.addBorrowedTicketWithBooks(ticket, bookTitles)) {
-            JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
-            updateTableData();
-            loadListTenSach();
-
-            // Gửi email
-            String docGiaEmail = dao.getReaderEmailByPhieuMuon(ticket.getMaPM());
-            if (docGiaEmail != null && !docGiaEmail.isEmpty()) {
-                EmailContext emailContext = new EmailContext();
-                emailContext.setStrategy(new BorrowSuccessEmail());
-                emailContext.sendEmail(docGiaEmail, ngayMuon, ngayTra, bookTitles);
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thất bại.");
-        }
+private void saveBorrowingInfo() {
+    String maDocGiaStr = txtMaDocGia.getText().trim();
+    if (maDocGiaStr.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Vui lòng nhập mã độc giả.");
+        return;
     }
+
+    java.util.Date ngayMuonUtil = txtNgayMuon.getDate();
+    java.util.Date ngayTraUtil = txtNgayTra.getDate();
+
+    if (ngayMuonUtil == null || ngayTraUtil == null) {
+        JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày mượn và ngày trả.");
+        return;
+    }
+
+    if (ngayTraUtil.before(ngayMuonUtil)) {
+        JOptionPane.showMessageDialog(this, "Ngày trả phải lớn hơn ngày mượn.");
+        return;
+    }
+
+    try {
+        maDocGia = Integer.parseInt(maDocGiaStr);
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Mã độc giả phải là số.");
+        return;
+    }
+
+    java.sql.Date ngayMuon = new java.sql.Date(ngayMuonUtil.getTime());
+    java.sql.Date ngayTra = new java.sql.Date(ngayTraUtil.getTime());
+
+    BorrowedTicket ticket = new BorrowedTicket();
+    ticket.setNgayMuon(ngayMuon);
+    ticket.setNgayTraDuKien(ngayTra);
+    ticket.setMaDocGia(maDocGia);
+    ticket.setTrangThai(0); 
+    BorrowedTicketDAO dao = new BorrowedTicketDAO();
+
+    List<String> bookTitles = listTenSach.getSelectedValuesList();
+
+    if (dao.addBorrowedTicketWithBooks(ticket, bookTitles)) {
+        JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
+        updateTableData();
+        loadListTenSach();
+
+        // 📩 Gửi email xác nhận mượn sách
+        MemberDao readerDAO = new MemberDao();
+        String email = readerDAO.getEmailByReaderId(maDocGia);
+        if (email != null && !email.isEmpty()) {
+            EmailTemplate emailContent = EmailFactory.createEmail("BORROW_CONFIRMATION", ngayMuon, ngayTra, null, bookTitles, null, null, null);
+            EmailSender.send(email, "Xác nhận mượn sách", emailContent.createEmailContent());
+            JOptionPane.showMessageDialog(this, "Email xác nhận đã được gửi đến độc giả.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy email của độc giả.");
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thất bại.");
+    }
+}
+
+    
+
 
     private void loadListTenSach() {
         DefaultListModel<String> listModel = new DefaultListModel<>();
