@@ -332,46 +332,105 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
         Date ngayMuon = dao.getNgayMuonByPhieuMuon(maPM);
         Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
 
-        double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
-        double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
-        double tongPhi = phi + tienPhat;
-
         for (int row : selectedRows) {
             int maSach = (int) tableSachMuon.getValueAt(row, 0);
-            if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
+            if (isSachAvailable(maSach)) {
                 JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó: " + tableSachMuon.getValueAt(row, 1));
+            } else if(isSachLoss(maSach)){
+                JOptionPane.showMessageDialog(null, "Sách đã mất" + tableSachMuon.getValueAt(row, 1));
             } else {
                 BookContext bookContext = new BookContext(conn);
                 bookContext.setState(new ReturnedState());
                 bookContext.updateSachStatus(maSach, maPM);
+                
                 sachDaTra.add(tableSachMuon.getValueAt(row, 1).toString());
+                double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+                double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon, tableSachMuon);
+                double tongPhi = phi + tienPhat;
+                // Sau khi cập nhật trạng thái sách thành công, gửi email
+                MemberDao readerDAO = new MemberDao();
+                String email = readerDAO.getEmailByReaderId(maDocGia);
+
+                if (email != null && !email.isEmpty()) {
+                    EmailSender.send(
+                        email,
+                        "Xác nhận trả sách thành công",
+                        EmailFactory.createEmail(
+                            "RETURN_CONFIRMATION", 
+                            ngayMuon, 
+                            ngayTra, 
+                            ngayTraThucTe, 
+                            sachDaTra, 
+                            phi, 
+                            tienPhat, 
+                            tongPhi
+                        ).createEmailContent()
+                    );
+                    JOptionPane.showMessageDialog(this, "✅ Email xác nhận trả sách đã được gửi đến: " + email);
+                } else {
+                    JOptionPane.showMessageDialog(this, "❌ Không tìm thấy email của độc giả.");
+
+                    System.out.println("❌ Không tìm thấy email của độc giả.");
+                }
             }
         }
+    } else {
+        JOptionPane.showMessageDialog(null, "Vui lòng chọn ít nhất một sách để trả.");
+    }
+}
+private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        this.conn = dbConnection.getConnection();
+    int[] selectedRows = tableSachMuon.getSelectedRows();
+    if (selectedRows.length > 0) {
+        BorrowedTicketDAO dao = new BorrowedTicketDAO();
+        List<String> sachDaMat = new ArrayList<>();
+        int soSachMuon = selectedRows.length;
 
-        // Sau khi cập nhật trạng thái sách thành công, gửi email
-        MemberDao readerDAO = new MemberDao();
-        String email = readerDAO.getEmailByReaderId(maDocGia);
+        Date ngayTraThucTe = new Date();
+        Date ngayMuon = dao.getNgayMuonByPhieuMuon(maPM);
+        Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
 
-        if (email != null && !email.isEmpty()) {
-            EmailSender.send(
-                email,
-                "Xác nhận trả sách thành công",
-                EmailFactory.createEmail(
-                    "RETURN_CONFIRMATION", 
-                    ngayMuon, 
-                    ngayTra, 
-                    ngayTraThucTe, 
-                    sachDaTra, 
-                    phi, 
-                    tienPhat, 
-                    tongPhi
-                ).createEmailContent()
-            );
-            JOptionPane.showMessageDialog(this, "✅ Email xác nhận trả sách đã được gửi đến: " + email);
-        } else {
-            JOptionPane.showMessageDialog(this, "❌ Không tìm thấy email của độc giả.");
+        for (int row : selectedRows) {
+            int maSach = (int) tableSachMuon.getValueAt(row, 0);
+            if (isSachAvailable(maSach)) {
+                JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó: " + tableSachMuon.getValueAt(row, 1));
+            } else if(isSachLoss(maSach)){
+                JOptionPane.showMessageDialog(null, "Sách đã mất" + tableSachMuon.getValueAt(row, 1));
+            } else {
+                BookContext bookContext = new BookContext(conn);
+                bookContext.setState(new LostState());
+                bookContext.updateSachStatus(maSach, maPM);
+                
+                sachDaMat.add(tableSachMuon.getValueAt(row, 1).toString());
+                double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+                double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon, tableSachMuon);
+                double tongPhi = phi + tienPhat;
+                // Sau khi cập nhật trạng thái sách thành công, gửi email
+                MemberDao readerDAO = new MemberDao();
+                String email = readerDAO.getEmailByReaderId(maDocGia);
 
-            System.out.println("❌ Không tìm thấy email của độc giả.");
+                if (email != null && !email.isEmpty()) {
+                    EmailSender.send(
+                        email,
+                        "Thông báo mất sách",
+                        EmailFactory.createEmail(
+                            "LOSS", 
+                            ngayMuon, 
+                            ngayTra, 
+                            ngayTraThucTe, 
+                            sachDaMat, 
+                            phi, 
+                            tienPhat, 
+                            tongPhi
+                        ).createEmailContent()
+                    );
+                    JOptionPane.showMessageDialog(this, "✅ Email xác nhận trả sách đã được gửi đến: " + email);
+                } else {
+                    JOptionPane.showMessageDialog(this, "❌ Không tìm thấy email của độc giả.");
+                    System.out.println("❌ Không tìm thấy email của độc giả.");
+                }
+            }
         }
     } else {
         JOptionPane.showMessageDialog(null, "Vui lòng chọn ít nhất một sách để trả.");
@@ -379,24 +438,67 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
 }
 
 
-
-    private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
-    int selectedRow = tableSachMuon.getSelectedRow();
-
-    if (selectedRow >= 0) {
-        int maSach = (int) tableSachMuon.getValueAt(selectedRow, 0);
-
-        if (isSachAvailable(maSach) || isSachAvailable2(maSach)) {
-            JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó");
-        } else {
-            BookContext bookContext = new BookContext(conn);
-            bookContext.setState(new LostState());
-            bookContext.updateSachStatus(maSach, maPM);
-        }
-    } else {
-        JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để cập nhật trạng thái mất sách.");
-    }
-}
+//    private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
+//    int[] selectedRows = tableSachMuon.getSelectedRows();
+//    if (selectedRows.length > 0) {
+//        BorrowedTicketDAO dao = new BorrowedTicketDAO();
+//        List<String> sachDaMat = new ArrayList<>();
+//        int soSachMuon = selectedRows.length;
+//
+//        Date ngayTraThucTe = new Date();
+//        Date ngayMuon = dao.getNgayMuonByPhieuMuon(maPM);
+//        Date ngayTra = dao.getNgayTraByPhieuMuon(maPM);
+//
+//        for (int row : selectedRows) {
+//            int maSach = (int) tableSachMuon.getValueAt(row, 0);
+//            if (isSachAvailable(maSach)) {
+//                JOptionPane.showMessageDialog(null, "Sách đã được trả trước đó: " + tableSachMuon.getValueAt(row, 1));
+//                System.out.println("case 1" +isSachAvailable(maSach));
+//            } else if(isSachLoss(maSach)){
+//                JOptionPane.showMessageDialog(null, "Sách đã mất" + tableSachMuon.getValueAt(row, 1));
+//                System.out.println("case 2" +isSachAvailable(maSach));
+//            } else {
+//                //set state
+//                System.out.println("case 3" +isSachAvailable(maSach));
+//                BookContext bookContext = new BookContext(conn);
+//                bookContext.setState(new LostState());
+//                bookContext.updateSachStatus(maSach, maPM);
+//                sachDaMat.add(tableSachMuon.getValueAt(row, 1).toString());
+//                
+//                double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
+//                double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon, tableSachMuon);
+//                double tongPhi = phi + tienPhat;
+//
+//                //send email
+//                MemberDao readerDAO = new MemberDao();
+//                String email = readerDAO.getEmailByReaderId(maDocGia);
+//
+//                if (email != null && !email.isEmpty()) {
+//                    EmailSender.send(
+//                        email,
+//                        "Thông báo mất sách",
+//                        EmailFactory.createEmail(
+//                            "LOSS", 
+//                            ngayMuon, 
+//                            ngayTra, 
+//                            ngayTraThucTe, 
+//                            sachDaMat, 
+//                            phi, 
+//                            tienPhat, 
+//                            tongPhi
+//                        ).createEmailContent()
+//                    );
+//                    JOptionPane.showMessageDialog(this, "✅ Email xác nhận trả sách đã được gửi đến: " + email);
+//                } else {
+//                    JOptionPane.showMessageDialog(this, "❌ Không tìm thấy email của độc giả.");
+//                    System.out.println("❌ Không tìm thấy email của độc giả.");
+//                }
+//            }
+//        }
+//    } else {
+//        JOptionPane.showMessageDialog(null, "Vui lòng chọn ít nhất một sách để trả.");
+//    }
+//}
 
 
     private void getTienPhatAndNgayTraThucTe(int maPM) {
@@ -545,7 +647,7 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     int trangThai = rs.getInt("TrangThai");
-                    return trangThai == 0; // Trả về true nếu trạng thái = 1
+                    return trangThai == 0;
                 }
             }
         } catch (SQLException e) {
@@ -556,7 +658,7 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
         return false;
     }
 
-    private boolean isSachAvailable2(int maSach) {
+    private boolean isSachLoss(int maSach) {
         String query = "SELECT TrangThai FROM Sach WHERE MaSach = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -565,7 +667,8 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     int trangThai = rs.getInt("TrangThai");
-                    return trangThai == 2; // Trả về true nếu trạng thái = 1
+                    System.out.println(trangThai);
+                    return trangThai == 2; // Trả về true nếu trạng thái = 2
                 }
             }
         } catch (SQLException e) {

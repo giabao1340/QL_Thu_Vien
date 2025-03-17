@@ -22,6 +22,8 @@ public class EmailFactory {
                 return new ReminderEmail(ngayMuon, ngayTraDuKien, sachDaMuon);
             case "OVERDUE":
                 return new OverdueEmail(ngayMuon, ngayTraDuKien, sachDaMuon, tienPhat, tongPhi);
+            case "LOSS":
+                return new LossEmail(ngayMuon, ngayTraDuKien, sachDaMuon, tienPhat, tongPhi);
             default:
                 throw new IllegalArgumentException("Loại email không hợp lệ: " + type);
         }
