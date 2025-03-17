@@ -4,8 +4,10 @@
  */
 package com.mycompany.qlthuvien.dao;
 
-import com.mycompany.qlthuvien.state.BookContext;
-import com.mycompany.qlthuvien.state.BorrowedState;
+import com.mycompany.BorrowedTicketStates.BorrowedTicketContext;
+import com.mycompany.BorrowedTicketStates.StillDueState;
+import com.mycompany.qlthuvien.bookstate.BookContext;
+import com.mycompany.qlthuvien.bookstate.BorrowedState;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.model.BorrowedTicket;
 import java.sql.Connection;
@@ -64,12 +66,16 @@ public class BorrowedTicketDAO {
             pstmt.setInt(5, ticket.getMaDocGia());
             pstmt.setInt(6, ticket.getTrangThai());
             int affectedRows = pstmt.executeUpdate();
-            
             if (affectedRows > 0) {
                 ResultSet generatedKeys = pstmt.getGeneratedKeys();
                 if (generatedKeys.next()) {
                     ticket.setMaPM(generatedKeys.getInt(1));
                 }
+                int maPM = ticket.getMaPM();
+                BorrowedTicketContext context = new BorrowedTicketContext(conn);
+                context.setState(new StillDueState());
+                context.updateSachStatus(maPM);
+                
                 return true;
             }
         } catch (SQLException e) {

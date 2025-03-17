@@ -1,5 +1,5 @@
 
-package com.mycompany.qlthuvien.state;
+package com.mycompany.qlthuvien.bookstate;
 
 /**
  *
