@@ -417,7 +417,7 @@ public class PhieuMuonPage extends javax.swing.JFrame {
     }
 
     private void btnSendEmailActionPerformed(java.awt.event.ActionEvent evt) {
-        sendEmail();
+        
     }
 
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {

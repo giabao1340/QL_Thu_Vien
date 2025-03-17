@@ -6,12 +6,16 @@ package com.mycompany.qlthuvien.view;
 import FactoryMethod.EmailFactory;
 import FactoryMethod.EmailSender;
 import FactoryMethod.EmailTemplate;
-import com.mycompany.qlthuvien.state.BookContext;
+import com.mycompany.BorrowedTicketStates.BorrowedTicketContext;
+import com.mycompany.BorrowedTicketStates.LostBookState;
+import com.mycompany.BorrowedTicketStates.StillDueState;
+import com.mycompany.qlthuvien.bookstate.BookContext;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
 import com.mycompany.qlthuvien.dao.MemberDao;
-import com.mycompany.qlthuvien.state.LostState;
-import com.mycompany.qlthuvien.state.ReturnedState;
+import com.mycompany.qlthuvien.bookstate.LostState;
+import com.mycompany.BorrowedTicketStates.ReturnedTicketState;
+import com.mycompany.qlthuvien.bookstate.ReturnedState;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -343,6 +347,10 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
                 bookContext.setState(new ReturnedState());
                 bookContext.updateSachStatus(maSach, maPM);
                 
+                BorrowedTicketContext context = new BorrowedTicketContext(conn);
+                context.setState(new ReturnedTicketState());
+                context.updateSachStatus(maPM);
+                
                 sachDaTra.add(tableSachMuon.getValueAt(row, 1).toString());
                 double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
                 double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon, tableSachMuon);
@@ -402,6 +410,9 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
                 bookContext.setState(new LostState());
                 bookContext.updateSachStatus(maSach, maPM);
                 
+                BorrowedTicketContext context = new BorrowedTicketContext(conn);
+                context.setState(new LostBookState());
+                context.updateSachStatus(maPM);
                 sachDaMat.add(tableSachMuon.getValueAt(row, 1).toString());
                 double phi = dao.tinhPhi(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
                 double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon, tableSachMuon);
@@ -425,7 +436,7 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
                             tongPhi
                         ).createEmailContent()
                     );
-                    JOptionPane.showMessageDialog(this, "✅ Email xác nhận trả sách đã được gửi đến: " + email);
+                    JOptionPane.showMessageDialog(this, "✅ Email xác nhận mất sách đã được gửi đến: " + email);
                 } else {
                     JOptionPane.showMessageDialog(this, "❌ Không tìm thấy email của độc giả.");
                     System.out.println("❌ Không tìm thấy email của độc giả.");
