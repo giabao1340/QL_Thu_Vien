@@ -25,6 +25,7 @@ D:\QLThuVien\src\main\java\FactoryMethod\BorrowConfirmationEmail.java
 D:\QLThuVien\src\main\java\FactoryMethod\EmailFactory.java
 D:\QLThuVien\src\main\java\FactoryMethod\EmailSender.java
 D:\QLThuVien\src\main\java\FactoryMethod\EmailTemplate.java
+D:\QLThuVien\src\main\java\FactoryMethod\LossEmail.java
 D:\QLThuVien\src\main\java\FactoryMethod\OverdueEmail.java
 D:\QLThuVien\src\main\java\FactoryMethod\ReminderEmail.java
 D:\QLThuVien\src\main\java\FactoryMethod\ReturnConfirmationEmail.java

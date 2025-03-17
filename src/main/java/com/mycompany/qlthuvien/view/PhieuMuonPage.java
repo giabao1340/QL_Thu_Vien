@@ -10,7 +10,6 @@ import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
 import com.mycompany.qlthuvien.dao.MemberDao;
 import com.mycompany.qlthuvien.model.BorrowedTicket;
-import com.mycompany.qlthuvien.view.ChiTietPhieuMuon;
 import javax.swing.DefaultListModel;
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -27,7 +26,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -438,101 +436,84 @@ public class PhieuMuonPage extends javax.swing.JFrame {
     }
 
     private void loadBookNames() {
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        this.conn = dbConnection.getConnection();
+        String sql = "SELECT TenSach FROM Sach WHERE TrangThai = 0";
 
-        try {
-            String sql = "SELECT TenSach FROM Sach WHERE TrangThai = 0";
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
             DefaultListModel<String> listModel = new DefaultListModel<>();
             while (rs.next()) {
-                String tenSach = rs.getString("TenSach");
-                listModel.addElement(tenSach);
+                listModel.addElement(rs.getString("TenSach"));
             }
 
             listTenSach.setModel(listModel);
-
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách tên sách: " + ex.getMessage());
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (SQLException closeEx) {
-                System.out.println("Lỗi khi đóng PreparedStatement hoặc ResultSet: " + closeEx.getMessage());
+        }
+    }
+
+    private void saveBorrowingInfo() {
+        String maDocGiaStr = txtMaDocGia.getText().trim();
+        if (maDocGiaStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mã độc giả.");
+            return;
+        }
+
+        java.util.Date ngayMuonUtil = txtNgayMuon.getDate();
+        java.util.Date ngayTraUtil = txtNgayTra.getDate();
+
+        if (ngayMuonUtil == null || ngayTraUtil == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày mượn và ngày trả.");
+            return;
+        }
+
+        if (ngayTraUtil.before(ngayMuonUtil)) {
+            JOptionPane.showMessageDialog(this, "Ngày trả phải lớn hơn ngày mượn.");
+            return;
+        }
+
+        try {
+            maDocGia = Integer.parseInt(maDocGiaStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Mã độc giả phải là số.");
+            return;
+        }
+
+        java.sql.Date ngayMuon = new java.sql.Date(ngayMuonUtil.getTime());
+        java.sql.Date ngayTra = new java.sql.Date(ngayTraUtil.getTime());
+
+        BorrowedTicket ticket = new BorrowedTicket();
+        ticket.setNgayMuon(ngayMuon);
+        ticket.setNgayTraDuKien(ngayTra);
+        ticket.setMaDocGia(maDocGia);
+        ticket.setTrangThai(0); 
+        BorrowedTicketDAO dao = new BorrowedTicketDAO();
+
+        List<String> bookTitles = listTenSach.getSelectedValuesList();
+
+        if (dao.addBorrowedTicketWithBooks(ticket, bookTitles)) {
+            JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
+            // 📩 Gửi email xác nhận mượn sách
+            MemberDao readerDAO = new MemberDao();
+            String email = readerDAO.getEmailByReaderId(maDocGia);
+            if (email != null && !email.isEmpty()) {
+                EmailTemplate emailContent = EmailFactory.createEmail("BORROW_CONFIRMATION", ngayMuon, ngayTra, null, bookTitles, null, null, null);
+                EmailSender.send(email, "Xác nhận mượn sách", emailContent.createEmailContent());
+                JOptionPane.showMessageDialog(this, "Email xác nhận đã được gửi đến độc giả.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy email của độc giả.");
             }
-        }
-    }
-
-private void saveBorrowingInfo() {
-    String maDocGiaStr = txtMaDocGia.getText().trim();
-    if (maDocGiaStr.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Vui lòng nhập mã độc giả.");
-        return;
-    }
-
-    java.util.Date ngayMuonUtil = txtNgayMuon.getDate();
-    java.util.Date ngayTraUtil = txtNgayTra.getDate();
-
-    if (ngayMuonUtil == null || ngayTraUtil == null) {
-        JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày mượn và ngày trả.");
-        return;
-    }
-
-    if (ngayTraUtil.before(ngayMuonUtil)) {
-        JOptionPane.showMessageDialog(this, "Ngày trả phải lớn hơn ngày mượn.");
-        return;
-    }
-
-    try {
-        maDocGia = Integer.parseInt(maDocGiaStr);
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "Mã độc giả phải là số.");
-        return;
-    }
-
-    java.sql.Date ngayMuon = new java.sql.Date(ngayMuonUtil.getTime());
-    java.sql.Date ngayTra = new java.sql.Date(ngayTraUtil.getTime());
-
-    BorrowedTicket ticket = new BorrowedTicket();
-    ticket.setNgayMuon(ngayMuon);
-    ticket.setNgayTraDuKien(ngayTra);
-    ticket.setMaDocGia(maDocGia);
-    ticket.setTrangThai(0); 
-    BorrowedTicketDAO dao = new BorrowedTicketDAO();
-
-    List<String> bookTitles = listTenSach.getSelectedValuesList();
-
-    if (dao.addBorrowedTicketWithBooks(ticket, bookTitles)) {
-        JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
-        updateTableData();
-        loadListTenSach();
-
-        // 📩 Gửi email xác nhận mượn sách
-        MemberDao readerDAO = new MemberDao();
-        String email = readerDAO.getEmailByReaderId(maDocGia);
-        if (email != null && !email.isEmpty()) {
-            EmailTemplate emailContent = EmailFactory.createEmail("BORROW_CONFIRMATION", ngayMuon, ngayTra, null, bookTitles, null, null, null);
-            EmailSender.send(email, "Xác nhận mượn sách", emailContent.createEmailContent());
-            JOptionPane.showMessageDialog(this, "Email xác nhận đã được gửi đến độc giả.");
         } else {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy email của độc giả.");
+            JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thất bại.");
         }
-    } else {
-        JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thất bại.");
+            updateTableData();
+            loadListTenSach();
     }
-}
-
-    
-
-
     private void loadListTenSach() {
+        DatabaseConnection dbConnection = DatabaseConnection.getInstance();
+        this.conn = dbConnection.getConnection();
         DefaultListModel<String> listModel = new DefaultListModel<>();
         PreparedStatement pstmt = null;
         ResultSet rs = null;
@@ -688,84 +669,93 @@ private void saveBorrowingInfo() {
     }
 
     public void updateTableData() {
-        // Cập nhật dữ liệu từ cơ sở dữ liệu lên JTable
-        PreparedStatement pstmt = null;
         ResultSet rs = null;
+        PreparedStatement pstmt = null;
 
         try {
-            String sql = "SELECT MaPM, NgayMuon, NgayTraDuKien, NgayTraThucTe, TienPhat, MaDocGia,TrangThai FROM PhieuMuon";
+            // Lấy kết nối từ Singleton
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            if (conn == null || conn.isClosed()) {
+                System.err.println("Lỗi: Kết nối bị đóng, đang mở lại...");
+                conn = DatabaseConnection.getInstance().getConnection();
+            }
+
+            // Truy vấn SQL lấy dữ liệu từ bảng PhieuMuon
+            String sql = "SELECT MaPM, NgayMuon, NgayTraDuKien, NgayTraThucTe, TienPhat, MaDocGia, TrangThai FROM PhieuMuon";
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
 
-            // Xóa hết các dòng hiện tại trong tableModel
+            // Xóa toàn bộ dữ liệu cũ trong tableModel
             tableModel.setRowCount(0);
 
-            // Duyệt qua kết quả truy vấn và thêm vào tableModel
+            // Duyệt qua dữ liệu từ ResultSet và thêm vào JTable
             while (rs.next()) {
-
                 int maPM = rs.getInt("MaPM");
                 Date ngayMuon = rs.getDate("NgayMuon");
                 Date ngayTra = rs.getDate("NgayTraDuKien");
+                Date ngayTraTT = rs.getDate("NgayTraThucTe");
                 int tienPhat = rs.getInt("TienPhat");
                 String maDocGia = rs.getString("MaDocGia");
-                Date ngayTraTT = rs.getDate("NgayTraThucTe");
-                // Tính toán Trạng thái dựa trên ngày trả và ngày hiện tại
-                Date currentDate = new Date();
+                int status = rs.getInt("TrangThai");
 
-//                updatePhieuMuonStatus(maPM);
-                if (ngayTra != null) {
-                    if (ngayTra.compareTo(currentDate) >= 0 && ngayTraTT == null) {
+                // Khai báo biến trạng thái
+                String trangThai = "";
+
+                // Xác định trạng thái phiếu mượn
+                switch (status) {
+                    case 0:
                         trangThai = "Còn hạn trả";
-                    } else if (ngayTra.before(currentDate) && ngayTraTT == null) {
-                        trangThai = "Quá hạn trả";
-                    } else if (ngayTraTT != null) {
+                        break;
+                    case 1:
                         trangThai = "Đã trả";
-                    }
-
+                        break;
+                    case 2:
+                        trangThai = "Quá hạn trả";
+                        break;
+                    default:
+                        trangThai = "Mất sách";
+                        break;
                 }
 
-                // Thêm dòng mới vào tableModel
+                // Thêm dòng vào bảng
                 tableModel.addRow(new Object[]{maPM, ngayMuon, ngayTra, ngayTraTT, tienPhat, maDocGia, trangThai});
             }
-
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu phiếu mượn: " + ex.getMessage());
+            //JOptionPane.showMessageDialog(null, "Lỗi khi tải dữ liệu phiếu mượn: " + ex.getMessage());
+            ex.printStackTrace(); // In lỗi ra console để dễ debug
         } finally {
             try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (pstmt != null) {
-                    pstmt.close();
-                }
+                if (rs != null) rs.close();
+                if (pstmt != null) pstmt.close();
             } catch (SQLException closeEx) {
-                System.out.println("Lỗi khi đóng PreparedStatement hoặc ResultSet: " + closeEx.getMessage());
+                System.err.println("Lỗi khi đóng PreparedStatement hoặc ResultSet: " + closeEx.getMessage());
             }
         }
     }
 
-    private void updatePhieuMuonStatus(int maPM) {
-        // Câu lệnh SQL để cập nhật trạng thái dựa trên MaPM
-        String updateQuery = "UPDATE PhieuMuon "
-                + "SET TrangThai = CASE "
-                + "    WHEN NgayTraThucTe IS NOT NULL THEN 1 "
-                + "    WHEN NgayTraDuKien < GETDATE() THEN 1 "
-                + "    WHEN NgayTraDuKien >= GETDATE() THEN 0 "
-                + "    ELSE TrangThai "
-                + // Giữ nguyên trạng thái nếu không khớp với bất kỳ điều kiện nào
-                "END "
-                + "WHERE MaPM = ?"; // Thêm điều kiện WHERE để lọc theo MaPM
 
-        try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-            pstmt.setInt(1, maPM); // Đặt giá trị MaPM vào PreparedStatement
-            int rowsAffected = pstmt.executeUpdate();
-
-            // In ra số lượng dòng bị ảnh hưởng
-            System.out.println("Đã cập nhật trạng thái cho " + rowsAffected + " phiếu mượn.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void updatePhieuMuonStatus(int maPM) {
+//        // Câu lệnh SQL để cập nhật trạng thái dựa trên MaPM
+//        String updateQuery = "UPDATE PhieuMuon "
+//                + "SET TrangThai = CASE "
+//                + "    WHEN NgayTraThucTe IS NOT NULL THEN 1 "
+//                + "    WHEN NgayTraDuKien < GETDATE() THEN 1 "
+//                + "    WHEN NgayTraDuKien >= GETDATE() THEN 0 "
+//                + "    ELSE TrangThai "
+//                + // Giữ nguyên trạng thái nếu không khớp với bất kỳ điều kiện nào
+//                "END "
+//                + "WHERE MaPM = ?"; // Thêm điều kiện WHERE để lọc theo MaPM
+//
+//        try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+//            pstmt.setInt(1, maPM); // Đặt giá trị MaPM vào PreparedStatement
+//            int rowsAffected = pstmt.executeUpdate();
+//
+//            // In ra số lượng dòng bị ảnh hưởng
+//            System.out.println("Đã cập nhật trạng thái cho " + rowsAffected + " phiếu mượn.");
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void searchReaderEmail() {
         int selectedRow = tablePhieuMuon.getSelectedRow();

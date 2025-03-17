@@ -219,20 +219,14 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
         } else {
             phi = weeksBorrowed * 5000 * soSachMuon;
         }
-        
-
-        // Tính tiền phạt
-        double phat =tinhTienPhat(ngayMuon, ngayTra, ngayTraThucTe, soSachMuon);
-        return phi + phat;
+        return phi;
     }
-    public double tinhTienPhat(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon) {
+    public double tinhTienPhat(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon, JTable table) {
         // Tính số ngày đã mượn
         long daysBorrowed = (ngayTraThucTe.getTime() - ngayMuon.getTime()) / (1000 * 60 * 60 * 24);
         // Tính số ngày quá hạn
         long daysLate = (ngayTraThucTe.getTime() - ngayTra.getTime()) / (1000 * 60 * 60 * 24);
 
-        // Tính số tuần mượn (lấy phần nguyên)
-        int weeksBorrowed = (int) Math.ceil(daysBorrowed / 7.0);
         // Tính tiền phạt
         double phat = 0;
         if (daysLate > 0) {
@@ -243,9 +237,57 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
                 phat = weeksLate * 5000 * soSachMuon;
             }
         }
-        // Tổng phí
-        return  phat;
+
+        // Cộng tổng giá sách bị quá hạn vào tiền phạt
+    
+        double totalBookPrice = 0;
+        for (int i = 0; i < table.getRowCount(); i++) {
+            int bookId = (int) table.getValueAt(i, 0); // Cột 1 chứa mã sách
+            if (isSachLoss(bookId)) {
+            totalBookPrice += getPriceById(bookId);
+            System.out.println(totalBookPrice);
+            }
+        }
+        System.out.println(totalBookPrice);
+        return phat + totalBookPrice;
     }
+        private boolean isSachLoss(int maSach) {
+        String query = "SELECT TrangThai FROM Sach WHERE MaSach = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, maSach);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int trangThai = rs.getInt("TrangThai");
+                    return trangThai == 2; // Trả về true nếu trạng thái = 2
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public double getPriceById(int bookId) {
+        double price = 0;
+        try {String sql = "SELECT GiaSach FROM Sach WHERE MaSach = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, bookId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                price = rs.getDouble("giaSach");
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println(price);
+        return price;
+}
+
     public boolean capNhatPhi(int maPhieuMuon, double phi, double tienPhat) {
         String sql = "UPDATE PhieuMuon SET Phi = ?, TienPhat = ? WHERE MaPM = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
