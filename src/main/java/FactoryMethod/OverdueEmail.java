@@ -4,6 +4,7 @@
  */
 package FactoryMethod;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -26,14 +27,30 @@ public class OverdueEmail implements EmailTemplate {
         this.tongPhi = tongPhi;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String createEmailContent() {
-        return "Chào bạn,\n\nBạn đã quá hạn trả sách!\n\n" +
-                "📅 Ngày mượn: " + ngayMuon + "\n" +
-                "📅 Ngày trả dự kiến: " + ngayTraDuKien + "\n\n" +
-                "📚 Danh sách sách đã mượn:\n- " + String.join("\n- ", sachDaMuon) + "\n\n" +
-                "💰 Phí phạt: " + tienPhat + " VNĐ\n" +
-                "💰 Tổng phí cần thanh toán: " + tongPhi + " VNĐ\n\n" +
-                "Vui lòng hoàn thành việc trả sách ngay lập tức.\n\nCảm ơn bạn!";
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        String ngayMuonStr = sdf.format(ngayMuon);
+        String ngayTraDuKienStr = sdf.format(ngayTraDuKien);
+
+        StringBuilder emailContent = new StringBuilder();
+        emailContent.append("📢 THÔNG BÁO QUÁ HẠN TRẢ SÁCH 📢\n\n");
+        emailContent.append("📅 Ngày mượn: ").append(ngayMuonStr).append("\n");
+        emailContent.append("📅 Ngày trả dự kiến: ").append(ngayTraDuKienStr).append("\n\n");
+        emailContent.append("📚 Danh sách sách đã mượn:\n");
+        
+        for (String sach : sachDaMuon) {
+            emailContent.append("   - ").append(sach).append("\n");
+        }
+        
+        emailContent.append("\n💰 Tiền phạt: ").append(tienPhat).append(" VNĐ\n");
+        emailContent.append("💳 Tổng phí cần thanh toán: ").append(tongPhi).append(" VNĐ\n\n");
+        emailContent.append("⚠ Vui lòng đến thư viện để hoàn tất việc trả sách và thanh toán các khoản phí. Cảm ơn bạn!");
+        
+        return emailContent.toString();
     }
 }
