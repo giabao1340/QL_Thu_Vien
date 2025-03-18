@@ -111,4 +111,5 @@ com\mycompany\qlthuvien\view\BookForm$3.class
 FactoryMethod\ReminderEmail.class
 com\mycompany\qlthuvien\view\ChiTietPhieuMuon$5.class
 com\mycompany\qlthuvien\view\ChiTietSach$10.class
+com\mycompany\qlthuvien\dao\BorrowInfo.class
 com\mycompany\qlthuvien\view\ChiTietSach$6.class

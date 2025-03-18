@@ -210,13 +210,10 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
             }
             return returnedBooks;
         }
-
+        
     public double tinhPhi(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon) {
         // Tính số ngày đã mượn
         long daysBorrowed = (ngayTraThucTe.getTime() - ngayMuon.getTime()) / (1000 * 60 * 60 * 24);
-        // Tính số ngày quá hạn
-        long daysLate = (ngayTraThucTe.getTime() - ngayTra.getTime()) / (1000 * 60 * 60 * 24);
-
         // Tính số tuần mượn (lấy phần nguyên)
         int weeksBorrowed = (int) Math.ceil(daysBorrowed / 7.0);
         double phi;
@@ -227,12 +224,10 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
         }
         return phi;
     }
-    public double tinhTienPhat(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon, JTable table) {
-        // Tính số ngày đã mượn
-        long daysBorrowed = (ngayTraThucTe.getTime() - ngayMuon.getTime()) / (1000 * 60 * 60 * 24);
+    public double tinhTienPhat(java.util.Date ngayMuon, java.util.Date ngayTra, java.util.Date ngayTraThucTe, int soSachMuon, List<Integer> sachDaMuon) {
         // Tính số ngày quá hạn
         long daysLate = (ngayTraThucTe.getTime() - ngayTra.getTime()) / (1000 * 60 * 60 * 24);
-
+        System.out.println("\nngay tre: " + daysLate);
         // Tính tiền phạt
         double phat = 0;
         if (daysLate > 0) {
@@ -240,24 +235,25 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
                 phat = 3000 * soSachMuon;
             } else {
                 int weeksLate = (int) Math.ceil(daysLate / 7.0);
+                System.out.println("tuan tre: " + weeksLate);
                 phat = weeksLate * 5000 * soSachMuon;
             }
         }
 
-        // Cộng tổng giá sách bị quá hạn vào tiền phạt
-    
+        // Tính tổng giá sách bị mất
         double totalBookPrice = 0;
-        for (int i = 0; i < table.getRowCount(); i++) {
-            int bookId = (int) table.getValueAt(i, 0); // Cột 1 chứa mã sách
-            if (isSachLoss(bookId)) {
-            totalBookPrice += getPriceById(bookId);
-            System.out.println(totalBookPrice);
+        for (int bookId : sachDaMuon) {  // Duyệt danh sách mã sách
+            if (isSachLoss(bookId)) {  // Kiểm tra sách có bị mất không
+                totalBookPrice += getPriceById(bookId); // Lấy giá sách và cộng vào tổng
             }
         }
-        System.out.println(totalBookPrice);
+
+        System.out.println("Tiền phạt: " + phat);
+        System.out.println("Tổng giá sách mất: " + totalBookPrice);
         return phat + totalBookPrice;
     }
-        private boolean isSachLoss(int maSach) {
+   
+    private boolean isSachLoss(int maSach) {
         String query = "SELECT TrangThai FROM Sach WHERE MaSach = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -293,18 +289,93 @@ public boolean addBorrowedTicketWithBooks(BorrowedTicket ticket, List<String> bo
         System.out.println(price);
         return price;
 }
+    public List<Integer> getMaSachByPM(int maPM) {
+        List<Integer> maSachList = new ArrayList<>();
+        String sql = "SELECT MaSach FROM Sach_PhieuMuon WHERE MaPM = ?";
 
-    public boolean capNhatPhi(int maPhieuMuon, double phi, double tienPhat) {
-        String sql = "UPDATE PhieuMuon SET Phi = ?, TienPhat = ? WHERE MaPM = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setDouble(1, phi);
-            stmt.setDouble(2, tienPhat);
-            stmt.setInt(3, maPhieuMuon);
-            return stmt.executeUpdate() > 0;
+            stmt.setInt(1, maPM);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                maSachList.add(rs.getInt("MaSach"));
+                System.out.print(", Mã sách: " + rs.getInt("MaSach"));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return maSachList;
+    }
+
+    public List<String> getSachDaMuon(int maPM) {
+    List<String> sachList = new ArrayList<>();
+    String sql = "SELECT s.TenSach FROM Sach s " +
+                 "JOIN Sach_PhieuMuon spm ON s.MaSach = spm.MaSach " +
+                 "WHERE spm.MaPM = ?";
+
+    DatabaseConnection db = DatabaseConnection.getInstance();
+    Connection connect = db.getConnection();
+
+    try (PreparedStatement stmt = connect.prepareStatement(sql)) {
+        stmt.setInt(1, maPM);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            sachList.add(rs.getString("TenSach")); // Lấy tên sách
+            System.out.print(", Mã sách: " + rs.getInt("TenSach"));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return sachList;
+    }
+
+    public int getState(int maPM) {
+        int trangThai = -1; // Giá trị mặc định nếu không tìm thấy
+        String sql = "SELECT TrangThai FROM PhieuMuon WHERE MaPM = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, maPM);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                trangThai = rs.getInt("TrangThai"); // Lấy giá trị trạng thái
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi lấy trạng thái phiếu mượn: " + e.getMessage());
+        }
+
+        return trangThai; // Trả về trạng thái của phiếu mượn
+    }
+
+    public List<Integer> getListPMQuaHan() {
+        List<Integer> danhSachPM = new ArrayList<>();
+        String sql = "SELECT MaPM FROM PhieuMuon WHERE TrangThai = 2";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                danhSachPM.add(rs.getInt("MaPM"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return danhSachPM;
+    }
+
+    // Lấy mã độc giả theo mã phiếu mượn
+    public int getMaDocGiaByPM(int maPM) {
+        String sql = "SELECT MaDocGia FROM PhieuMuon WHERE MaPM = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, maPM);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("MaDocGia");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Trả về -1 nếu không tìm thấy
     }
 
 }

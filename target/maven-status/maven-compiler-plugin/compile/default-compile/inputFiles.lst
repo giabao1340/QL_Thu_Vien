@@ -11,6 +11,7 @@ D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\bookstate\LostState.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\bookstate\ReturnedState.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\dao\BookDAO.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\dao\BorrowedTicketDAO.java
+D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\dao\BorrowInfo.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\dao\MemberDao.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\DatabaseConnection.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\model\Book.java

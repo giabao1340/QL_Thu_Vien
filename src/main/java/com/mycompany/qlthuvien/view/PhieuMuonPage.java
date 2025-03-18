@@ -6,7 +6,12 @@ package com.mycompany.qlthuvien.view;
 import FactoryMethod.EmailFactory;
 import FactoryMethod.EmailSender;
 import FactoryMethod.EmailTemplate;
+import FactoryMethod.OverdueEmail;
+import com.mycompany.BorrowedTicketStates.BorrowedTicketContext;
+import com.mycompany.BorrowedTicketStates.OverDueState;
+import com.mycompany.BorrowedTicketStates.ReturnedTicketState;
 import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.dao.BorrowInfo;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
 import com.mycompany.qlthuvien.dao.MemberDao;
 import com.mycompany.qlthuvien.model.BorrowedTicket;
@@ -26,10 +31,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -38,6 +48,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.ParseException;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -329,7 +340,11 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         btnSendEmail.setText("Gửi Email");
         btnSendEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSendEmailActionPerformed(evt);
+                try {
+                    btnSendEmailActionPerformed(evt);
+                } catch (java.text.ParseException ex) {
+                    Logger.getLogger(PhieuMuonPage.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -416,10 +431,83 @@ public class PhieuMuonPage extends javax.swing.JFrame {
 
     }
 
-    private void btnSendEmailActionPerformed(java.awt.event.ActionEvent evt) {
-        
+    private void btnSendEmailActionPerformed(java.awt.event.ActionEvent evt) throws java.text.ParseException {                                             
+        MemberDao readerDAO = new MemberDao();
+        BorrowedTicketDAO dao = new BorrowedTicketDAO();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date currentDate = new Date(); // Ngày hiện tại
+        // Duyệt tabel lấy ra mã PM bị trễ hạn sau đó set state =2
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            try {
+                int maPM = Integer.parseInt(tableModel.getValueAt(i, 0).toString()); // Cột 0: Mã Phiếu Mượn
+                String ngayTraDuKienStr = tableModel.getValueAt(i, 2).toString(); // Cột 2: Ngày Trả Dự Kiến
+                Date ngayTraDuKien = sdf.parse(ngayTraDuKienStr);
+
+                if (ngayTraDuKien.before(currentDate)) { // Nếu đã quá hạn
+                    BorrowedTicketContext context = new BorrowedTicketContext(conn);
+                    context.setState(new OverDueState());
+                    context.updateSachStatus(maPM); // ✅ Cập nhật trạng thái = 2
+                }
+            } catch (Exception e) {
+                System.out.println("⚠ Lỗi tại dòng " + i + ": " + e.getMessage());
+            }
+        }
+        // ✅ Lấy danh sách phiếu mượn có trạng thái = 2 để gửi email
+        List<Integer> listPM = dao.getListPMQuaHan(); // Lấy danh sách MaPM có trạng thái = 2
+        for (int maPM : listPM) {
+            try {
+                System.out.println("📌 Xử lý gửi email cho Mã Phiếu Mượn: " + maPM);
+
+                // Lấy Mã Độc Giả từ Mã Phiếu Mượn
+                int maDocGia = dao.getMaDocGiaByPM(maPM);
+                String email = readerDAO.getEmailByReaderId(maDocGia);
+
+                if (email == null || email.isEmpty()) {
+                    System.out.println("⚠ Không tìm thấy email của độc giả có Mã Độc Giả: " + maDocGia);
+                    continue;
+                }
+                // ✅ Lấy thông tin sách mượn
+                List<String> sachDaMuon = dao.getSachDaMuon(maPM);
+                // ✅ Tìm index của hàng có mã phiếu mượn tương ứng
+                int rowIndex = -1;
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    if (tableModel.getValueAt(i, 0).toString().equals(String.valueOf(maPM))) { // Cột 0: Mã Phiếu Mượn
+                        rowIndex = i;
+                        break;
+                    }
+                }
+                // ✅ Kiểm tra nếu tìm thấy dòng hợp lệ
+                Date ngayMuon = null;
+                Date ngayTraDuKien = null;
+                if (rowIndex != -1) {
+                    ngayMuon = sdf.parse(tableModel.getValueAt(rowIndex, 1).toString()); // Cột 1: Ngày Mượn
+                    ngayTraDuKien = sdf.parse(tableModel.getValueAt(rowIndex, 2).toString()); // Cột 2: Ngày Trả Dự Kiến
+                } else {
+                    System.out.println("⚠ Không tìm thấy Mã Phiếu Mượn trong bảng: " + maPM);
+                    continue;
+                }
+                // ✅ Tính phí phạt
+                double phi = dao.tinhPhi(ngayMuon, ngayTraDuKien, currentDate, sachDaMuon.size());
+                double tienPhat = dao.tinhTienPhat(ngayMuon, ngayTraDuKien, currentDate, sachDaMuon.size(), dao.getMaSachByPM(maPM));
+                double tongPhi = phi + tienPhat;
+
+                System.out.println("📌 Mã PM: " + maPM + ", Ngày Mượn: " + ngayMuon + ", Ngày Trả Dự Kiến: " + ngayTraDuKien);
+                System.out.println("💰 Phí phạt: " + tienPhat + ", Tổng phí: " + tongPhi);
+
+                // ✅ Gửi email
+                OverdueEmail overdueEmail = new OverdueEmail(ngayMuon, ngayTraDuKien, sachDaMuon, tienPhat, tongPhi);
+                EmailSender.send(email, "Thông báo quá hạn", overdueEmail.createEmailContent());
+
+                System.out.println("📩 Đã gửi email quá hạn cho: " + email);
+            } catch (Exception e) {
+                System.out.println("❌ Lỗi khi gửi email cho Mã Phiếu Mượn: " + maPM + " - " + e.getMessage());
+            }
+        }
+
+        JOptionPane.showMessageDialog(null, "📬 Đã gửi email thông báo quá hạn.");
     }
 
+    
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here: 
         dispose();
@@ -732,31 +820,6 @@ public class PhieuMuonPage extends javax.swing.JFrame {
             }
         }
     }
-
-
-//    private void updatePhieuMuonStatus(int maPM) {
-//        // Câu lệnh SQL để cập nhật trạng thái dựa trên MaPM
-//        String updateQuery = "UPDATE PhieuMuon "
-//                + "SET TrangThai = CASE "
-//                + "    WHEN NgayTraThucTe IS NOT NULL THEN 1 "
-//                + "    WHEN NgayTraDuKien < GETDATE() THEN 1 "
-//                + "    WHEN NgayTraDuKien >= GETDATE() THEN 0 "
-//                + "    ELSE TrangThai "
-//                + // Giữ nguyên trạng thái nếu không khớp với bất kỳ điều kiện nào
-//                "END "
-//                + "WHERE MaPM = ?"; // Thêm điều kiện WHERE để lọc theo MaPM
-//
-//        try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-//            pstmt.setInt(1, maPM); // Đặt giá trị MaPM vào PreparedStatement
-//            int rowsAffected = pstmt.executeUpdate();
-//
-//            // In ra số lượng dòng bị ảnh hưởng
-//            System.out.println("Đã cập nhật trạng thái cho " + rowsAffected + " phiếu mượn.");
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     public void searchReaderEmail() {
         int selectedRow = tablePhieuMuon.getSelectedRow();
         if (selectedRow != -1) { // Kiểm tra nếu có dòng dữ liệu được chọn
@@ -919,4 +982,27 @@ public class PhieuMuonPage extends javax.swing.JFrame {
             new PhieuMuonPage().setVisible(true);
         });
     }
+
+    public String getBorrowedBooks(int maDocGia) {
+        String sql = "SELECT s.tenSach FROM Sach s " +
+                     "JOIN ChiTietPhieuMuon c ON s.maSach = c.maSach " +
+                     "JOIN PhieuMuon p ON c.maPM = p.MaPM " +
+                     "WHERE p.MaDocGia = ? AND p.TrangThai = 2"; // Chỉ lấy sách quá hạn
+        StringBuilder books = new StringBuilder();
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, maDocGia);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                if (books.length() > 0) books.append(", ");
+                books.append(rs.getString("tenSach"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return books.toString();
+    }
+
 }
