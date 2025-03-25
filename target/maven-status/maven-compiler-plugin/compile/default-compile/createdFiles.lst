@@ -4,9 +4,11 @@ com\mycompany\qlthuvien\DatabaseConnection.class
 com\mycompany\qlthuvien\view\ChiTietSach$8.class
 com\mycompany\qlthuvien\view\MemberForm$6.class
 com\mycompany\qlthuvien\bookstate\BookState.class
+command\Command.class
 FactoryMethod\EmailTemplate.class
 com\mycompany\qlthuvien\dao\BorrowedTicketDAO.class
 com\mycompany\BorrowedTicketStates\ReturnedTicketState.class
+com\mycompany\qlthuvien\view\Trash.class
 com\mycompany\qlthuvien\view\UpdateMem$1.class
 com\mycompany\qlthuvien\view\LoginForm$1.class
 com\mycompany\qlthuvien\view\ChiTietPhieuMuon$4.class
@@ -34,6 +36,7 @@ com\mycompany\qlthuvien\view\MemberForm$4.class
 com\mycompany\qlthuvien\test\test$CustomPanel.class
 com\mycompany\qlthuvien\view\UpdateMem.class
 com\mycompany\qlthuvien\view\UpdateMem$6.class
+com\mycompany\qlthuvien\view\BookForm$15.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$5.class
 com\mycompany\qlthuvien\view\RegisterMember$1.class
 com\mycompany\qlthuvien\view\HomePage$4.class
@@ -58,11 +61,14 @@ FactoryMethod\LossEmail.class
 com\mycompany\qlthuvien\view\BookForm$10.class
 com\mycompany\qlthuvien\view\ChiTietSach$1.class
 com\mycompany\qlthuvien\view\ChiTietSach$4.class
+command\DeleteBookCommand.class
 com\mycompany\qlthuvien\dao\BookDAO.class
+com\mycompany\qlthuvien\view\Trash$1.class
 FactoryMethod\BorrowConfirmationEmail.class
 com\mycompany\qlthuvien\view\ChiTietSach$11.class
 com\mycompany\qlthuvien\bookstate\ReturnedState.class
 FactoryMethod\EmailSender$1.class
+command\CommandManager.class
 com\mycompany\qlthuvien\view\MemberForm.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$3.class
 com\mycompany\qlthuvien\view\MemberForm$5.class
