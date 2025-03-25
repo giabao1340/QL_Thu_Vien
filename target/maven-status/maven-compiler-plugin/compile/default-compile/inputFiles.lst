@@ -27,7 +27,11 @@ D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\LoginForm.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\MemberForm.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\PhieuMuonPage.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\RegisterMember.java
+D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\Trash.java
 D:\QLThuVien\src\main\java\com\mycompany\qlthuvien\view\UpdateMem.java
+D:\QLThuVien\src\main\java\command\Command.java
+D:\QLThuVien\src\main\java\command\CommandManager.java
+D:\QLThuVien\src\main\java\command\DeleteBookCommand.java
 D:\QLThuVien\src\main\java\FactoryMethod\BorrowConfirmationEmail.java
 D:\QLThuVien\src\main\java\FactoryMethod\EmailFactory.java
 D:\QLThuVien\src\main\java\FactoryMethod\EmailSender.java
