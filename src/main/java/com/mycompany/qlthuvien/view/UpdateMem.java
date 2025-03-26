@@ -229,7 +229,7 @@ public class UpdateMem extends javax.swing.JFrame {
 
         upCbStatus.setBackground(new java.awt.Color(245, 247, 248));
         upCbStatus.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        upCbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "1", " " }));
+        upCbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "1", "2", "3", " " }));
         upCbStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upCbStatusActionPerformed(evt);

@@ -107,7 +107,15 @@ public class MemberDao {
             row[3] = list.get(i).getEmail();
             row[4] = list.get(i).getNgayLapThe();
             row[5] = list.get(i).getNgayHetHan();
-            row[6] = list.get(i).getTrangThai();
+            int trangThaiThe;
+            try {
+                trangThaiThe = Integer.parseInt(list.get(i).getTrangThai());
+            } catch (NumberFormatException e) {
+                trangThaiThe = -1; // Giá trị mặc định nếu dữ liệu không hợp lệ
+            }
+            String trangThaiText = (trangThaiThe == 1) ? "Thẻ còn hoạt động" :(trangThaiThe == 2) ? "Thẻ bị tạm ngưng" :(trangThaiThe == 3) ? "Thẻ bị khóa" :(trangThaiThe == 0) ? "Thẻ hết hạn" :"Không xác định";
+            row[6] = trangThaiText;
+//            row[6] = list.get(i).getTrangThai(); 
             row[7] = list.get(i).getGioiTinh() == 0 ? "Nam" : "Nữ";
             model.addRow(row);
         }

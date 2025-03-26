@@ -203,7 +203,7 @@ public class RegisterMember extends javax.swing.JFrame {
 
         cbStatus.setBackground(new java.awt.Color(245, 247, 248));
         cbStatus.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
-        cbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "1" }));
+        cbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "0", "1", "2", "3" }));
         cbStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbStatusActionPerformed(evt);
