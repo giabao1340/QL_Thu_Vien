@@ -9,12 +9,7 @@ import com.mycompany.qlthuvien.model.Member;
  *
  * @author minh9
  */
-public abstract class MemberState {
-    Member member;
-    MemberState(Member member)
-    {
-        this.member = member;
-    }
-    public abstract void ChangeState(MemberContext context,int maDG, int maPM);    
+public interface MemberState {
+     void ChangeState(MemberContext context,int maDG, int maPM);    
 }
     

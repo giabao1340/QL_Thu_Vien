@@ -26,6 +26,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import memberState.ActiveMemberState;
+import memberState.MemberContext;
 
 /**
  *
@@ -410,11 +412,11 @@ public class UpdateMem extends javax.swing.JFrame {
             String upStatus = upCbStatus.getSelectedItem().toString();
             String upGender = upCbGender.getSelectedItem().toString().equals("Nam") ? "0" : "1";
             // Truy van Update
-            DatabaseConnection dbConnection = DatabaseConnection.getInstance();;
+            DatabaseConnection dbConnection = DatabaseConnection.getInstance();
             Connection connection = dbConnection.getConnection();
             String ma = jMemTable.getValueAt(selectRow, 0).toString();
-
-            String sql = "Update DocGia set HoTen = ?,NgaySinh = ? ,Email= ?, NgayLapThe = ?, NgayHetHan = ? ,TrangThaiThe = ?, GioiTinh = ?,Hinh = ? where MaDocGia = ? ";
+            int maDG = Integer.parseInt(ma);
+            String sql = "Update DocGia set HoTen = ?,NgaySinh = ? ,Email= ?, NgayLapThe = ?, NgayHetHan = ? , GioiTinh = ?,Hinh = ? where MaDocGia = ? ";
             byte[] upImg = memImage;
             if (upImg == null) {
                 upImg = img;
@@ -428,10 +430,12 @@ public class UpdateMem extends javax.swing.JFrame {
                 ps.setString(3, upMail);
                 ps.setDate(4, upCreateDate);
                 ps.setDate(5, upExpiryDate);
-                ps.setString(6, upStatus);
-                ps.setString(7, upGender);
-                ps.setBytes(8, upImg);
-                ps.setString(9, ma);
+                MemberContext memberContext = new MemberContext();
+                memberContext.setState(new ActiveMemberState());
+                memberContext.ChangeState(maDG,0);
+                ps.setString(6, upGender);
+                ps.setBytes(7, upImg);
+                ps.setString(8, ma);
                 ps.executeUpdate();
                 System.out.println("Cap nhat member thanh cong");
                 s = 1;

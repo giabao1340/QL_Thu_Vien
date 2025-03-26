@@ -15,13 +15,10 @@ import java.util.logging.Logger;
  *
  * @author minh9
  */
-public class BlockedMemberState extends MemberState {
-    BlockedMemberState(Member member){
-        super(member);
-    }
+public class BlockedMemberState implements MemberState {
     @Override
     public void ChangeState(MemberContext context,int maDG, int maPM) {
-        String query = "UPDATE DocGia SET TrangThaiThe = 3 WHERE MaDocGia IN (SELECT MaDocGia FROM PhieuMuon WHERE TrangThai = 3 and MaPM = ?)";
+        String query = "UPDATE DocGia SET TrangThaiThe = 3 FROM PhieuMuon WHERE PhieuMuon.MaDocGia = DocGia.MaDocGia AND PhieuMuon.TrangThai = 3 AND PhieuMuon.MaPM = ?";
         try (PreparedStatement pstmtUpdateMem = context.getConnection().prepareStatement(query)) {
              pstmtUpdateMem.setInt(1, maPM);
             pstmtUpdateMem.executeUpdate();

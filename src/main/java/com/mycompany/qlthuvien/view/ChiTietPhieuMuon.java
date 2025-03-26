@@ -42,6 +42,8 @@ import javax.mail.internet.MimeMessage;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.util.List;
+import memberState.BlockedMemberState;
+import memberState.MemberContext;
 public class ChiTietPhieuMuon extends javax.swing.JFrame {
 
     private String ngayMuon, ngayTra, tenPM, ngayTraTT, tienPhat, tenDocGia, tenSach;
@@ -410,6 +412,11 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
 
         for (int row : selectedRows) {
             int maSach = (int) tableSachMuon.getValueAt(row, 0);
+            
+            
+            
+            
+            
             String tenSach = tableSachMuon.getValueAt(row, 1).toString();
 
             if (isSachAvailable(maSach)) {
@@ -426,7 +433,13 @@ private void btnMatSachActionPerformed(java.awt.event.ActionEvent evt) {
                 BorrowedTicketContext context = new BorrowedTicketContext(conn);
                 context.setState(new LostBookState());
                 context.updateSachStatus(maPM);
-
+                
+                //Cập nhật trạng thái member
+                MemberContext memberContext = new MemberContext();
+                memberContext.setState(new BlockedMemberState());
+                memberContext.ChangeState(maDocGia,maPM);
+                
+                
                 sachDaMat.add(tenSach);
                 maSachMat.add(maSach); // Lưu mã sách để tính tiền phạt
             }

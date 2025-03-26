@@ -21,9 +21,7 @@ public class MemberContext {
     
     
     public void setState(MemberState state) {
-        if (state != null) {
             this.state = state;
-        }
     }
     
     

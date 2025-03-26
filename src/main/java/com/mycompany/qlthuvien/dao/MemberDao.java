@@ -16,6 +16,10 @@ import java.util.Date;
 import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import memberState.ActiveMemberState;
+import memberState.ExpiredMemberState;
+import memberState.MemberContext;
+import memberState.MemberState;
 
 /**
  *
@@ -47,8 +51,8 @@ public class MemberDao {
             ps.setDate(2, birthDate);
             ps.setString(3, member.getEmail());
             ps.setDate(4, createDate);
-            ps.setDate(5, expiryDate);
-            ps.setString(6, member.getTrangThai());
+            ps.setDate(5, expiryDate); 
+            ps.setString(6, member.getTrangThai()); ///
             ps.setInt(7, member.getGioiTinh());
             ps.setBytes(8, member.getHinh());
             ps.executeUpdate();
@@ -71,6 +75,9 @@ public class MemberDao {
         String sql = "Select * from DocGia";
         DatabaseConnection dbConnection = DatabaseConnection.getInstance();
         Connection connection = dbConnection.getConnection(); //ket noi database
+        
+
+        
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet rs = statement.executeQuery(); //Query du lieu trong sql
             while (rs.next()) {
@@ -100,6 +107,10 @@ public class MemberDao {
         List<Member> list = loadMem();
         DefaultTableModel model = (DefaultTableModel) jMemTable.getModel();
         Object[] row = new Object[9];
+        
+        MemberContext memberContext = new MemberContext();
+        Date today = new Date(); // Lấy ngày hiện tại
+        
         for (int i = 0; i < list.size(); i++) { //Them du lieu vao tung dong cua jTable
             row[0] = list.get(i).getMaDocGia();
             row[1] = list.get(i).getHoTen();
@@ -112,6 +123,11 @@ public class MemberDao {
                 trangThaiThe = Integer.parseInt(list.get(i).getTrangThai());
             } catch (NumberFormatException e) {
                 trangThaiThe = -1; // Giá trị mặc định nếu dữ liệu không hợp lệ
+            }
+            int ma = Integer.parseInt(list.get(i).getMaDocGia());
+            if (list.get(i).getNgayHetHan().after(today)) { 
+            memberContext.setState(new ExpiredMemberState());
+            memberContext.ChangeState(ma, 0);
             }
             String trangThaiText = (trangThaiThe == 1) ? "Thẻ còn hoạt động" :(trangThaiThe == 2) ? "Thẻ bị tạm ngưng" :(trangThaiThe == 3) ? "Thẻ bị khóa" :(trangThaiThe == 0) ? "Thẻ hết hạn" :"Không xác định";
             row[6] = trangThaiText;

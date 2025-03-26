@@ -56,6 +56,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import memberState.SuspendedMemberState;
+import memberState.MemberContext;
 
 public class PhieuMuonPage extends javax.swing.JFrame {
 
@@ -440,14 +442,19 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             try {
                 int maPM = Integer.parseInt(tableModel.getValueAt(i, 0).toString()); // Cột 0: Mã Phiếu Mượn
+                int ma = Integer.parseInt(tableModel.getValueAt(i,5).toString());
                 String ngayTraDuKienStr = tableModel.getValueAt(i, 2).toString(); // Cột 2: Ngày Trả Dự Kiến
                 Date ngayTraDuKien = sdf.parse(ngayTraDuKienStr);
 
                 if (ngayTraDuKien.before(currentDate)) { // Nếu đã quá hạn
                     BorrowedTicketContext context = new BorrowedTicketContext(conn);
                     context.setState(new OverDueState());
-                    context.updateSachStatus(maPM); // ✅ Cập nhật trạng thái = 2
+                    context.updateSachStatus(maPM); // ✅ Cập nhật trạng thái = 2          
+                    //
                 }
+                MemberContext memberContext = new MemberContext();
+                memberContext.setState(new SuspendedMemberState());
+                memberContext.ChangeState(0,maPM);
             } catch (Exception e) {
                 System.out.println("⚠ Lỗi tại dòng " + i + ": " + e.getMessage());
             }
@@ -804,7 +811,7 @@ public class PhieuMuonPage extends javax.swing.JFrame {
                         trangThai = "Mất sách";
                         break;
                 }
-
+                
                 // Thêm dòng vào bảng
                 tableModel.addRow(new Object[]{maPM, ngayMuon, ngayTra, ngayTraTT, tienPhat, maDocGia, trangThai});
             }

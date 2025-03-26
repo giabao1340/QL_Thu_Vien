@@ -13,18 +13,15 @@ import java.util.logging.Logger;
  *
  * @author minh9
  */
-public class ActiveMemberState extends MemberState  {
-    ActiveMemberState(Member member) {
-        super(member);
-    }
+public class ActiveMemberState implements MemberState  {
     @Override
     public void ChangeState(MemberContext context,int maDG, int maPM) {
-        String query = "Update DocGia Set TrangThaiThe  = 1 where maDG = ?";
+        String query = "Update DocGia Set TrangThaiThe  = 1 where MaDocGia = ?";
         try (PreparedStatement pstmtUpdateMem = context.getConnection().prepareStatement(query)) {
             pstmtUpdateMem.setInt(1, maDG);
             pstmtUpdateMem.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(ReturnedState.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ActiveMemberState.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
