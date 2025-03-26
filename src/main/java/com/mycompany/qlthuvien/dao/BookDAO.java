@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,16 +121,66 @@ public class BookDAO {
 
         return books;
     }
-    // Delete a book by its ID
-    public void deleteBook(int maSach) {
-        String deleteSql = "DELETE FROM Sach WHERE MaSach = ?";
-        try (PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
+    public void restoreBook(int maSach) throws SQLException {
+        String enableIdentityInsert = "SET IDENTITY_INSERT Sach ON";
+        String disableIdentityInsert = "SET IDENTITY_INSERT Sach OFF";
+
+        String insertSql = "INSERT INTO Sach (MaSach, TenSach, MaTheLoai, TenTacGia, NamNXB, TrangThai, NXB, Hinh, MoTaSach, GiaSach) " +
+                           "SELECT MaSach, TenSach, MaTheLoai, TenTacGia, NamNXB, TrangThai, NXB, Hinh, MoTaSach, GiaSach " +
+                           "FROM SachDaXoa WHERE MaSach = ?";
+
+        String deleteSql = "DELETE FROM SachDaXoa WHERE MaSach = ?";
+
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             PreparedStatement insertStatement = conn.prepareStatement(insertSql);
+             PreparedStatement deleteStatement = conn.prepareStatement(deleteSql)) {
+
+            conn.setAutoCommit(false); // Bắt đầu giao dịch
+
+            // Bật IDENTITY_INSERT để cho phép chèn giá trị vào cột MaSach
+            stmt.execute(enableIdentityInsert);
+
+            insertStatement.setInt(1, maSach);
+            insertStatement.executeUpdate();
+
+            // Tắt IDENTITY_INSERT sau khi chèn xong
+            stmt.execute(disableIdentityInsert);
+
             deleteStatement.setInt(1, maSach);
             deleteStatement.executeUpdate();
+
+            conn.commit(); // Xác nhận giao dịch
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+    public void deleteBook(int maSach) throws SQLException {
+        String insertSql = "INSERT INTO SachDaXoa (MaSach, TenSach, MaTheLoai, TenTacGia, NamNXB, TrangThai, NXB, Hinh, MoTaSach, GiaSach) " +
+                           "SELECT MaSach, TenSach, MaTheLoai, TenTacGia, NamNXB, TrangThai, NXB, Hinh, MoTaSach, GiaSach " +
+                           "FROM Sach WHERE MaSach = ?";
+
+        String deleteSql = "DELETE FROM Sach WHERE MaSach = ?";
+
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement insertStatement = conn.prepareStatement(insertSql);
+             PreparedStatement deleteStatement = conn.prepareStatement(deleteSql)) {
+
+            conn.setAutoCommit(false); // Bắt đầu giao dịch
+
+            insertStatement.setInt(1, maSach);
+            insertStatement.executeUpdate();
+
+            deleteStatement.setInt(1, maSach);
+            deleteStatement.executeUpdate();
+
+            conn.commit(); // Xác nhận giao dịch
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 public List<Book> searchBooks(String keyword) {
     List<Book> books = new ArrayList<>();

@@ -37,8 +37,7 @@ public class DatabaseConnection {
         return instance;
     }
 
-    // Trả về kết nối hiện có
-        public Connection getConnection() {
+    public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
                 connection = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -46,11 +45,9 @@ public class DatabaseConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    return connection;
-}
+        return connection;
+    }
 
-
-    // Đóng kết nối khi không cần nữa
     public void closeConnection() {
         if (connection != null) {
             try {
