@@ -6,6 +6,7 @@ com\mycompany\qlthuvien\view\MemberForm$6.class
 com\mycompany\qlthuvien\bookstate\BookState.class
 FactoryMethod\EmailTemplate.class
 com\mycompany\qlthuvien\dao\BorrowedTicketDAO.class
+memberState\ActiveMemberState.class
 com\mycompany\BorrowedTicketStates\ReturnedTicketState.class
 com\mycompany\qlthuvien\view\UpdateMem$1.class
 com\mycompany\qlthuvien\view\LoginForm$1.class
@@ -34,6 +35,7 @@ com\mycompany\qlthuvien\view\MemberForm$4.class
 com\mycompany\qlthuvien\test\test$CustomPanel.class
 com\mycompany\qlthuvien\view\UpdateMem.class
 com\mycompany\qlthuvien\view\UpdateMem$6.class
+memberState\ExpiredMemberState.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$5.class
 com\mycompany\qlthuvien\view\RegisterMember$1.class
 com\mycompany\qlthuvien\view\HomePage$4.class
@@ -55,10 +57,13 @@ com\mycompany\qlthuvien\view\PhieuMuonPage$11.class
 com\mycompany\qlthuvien\view\BookForm$6.class
 com\mycompany\qlthuvien\view\HomePage$3.class
 FactoryMethod\LossEmail.class
+memberState\BlockedMemberState.class
+memberState\SuspendedMemberState.class
 com\mycompany\qlthuvien\view\BookForm$10.class
 com\mycompany\qlthuvien\view\ChiTietSach$1.class
 com\mycompany\qlthuvien\view\ChiTietSach$4.class
 com\mycompany\qlthuvien\dao\BookDAO.class
+memberState\MemberState.class
 FactoryMethod\BorrowConfirmationEmail.class
 com\mycompany\qlthuvien\view\ChiTietSach$11.class
 com\mycompany\qlthuvien\bookstate\ReturnedState.class
@@ -96,6 +101,7 @@ com\mycompany\BorrowedTicketStates\OverDueState.class
 com\mycompany\qlthuvien\model\BorrowedTicket.class
 com\mycompany\qlthuvien\view\BookForm$12.class
 com\mycompany\qlthuvien\view\LoginForm$GradientPanel.class
+memberState\MemberContext.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$14.class
 com\mycompany\qlthuvien\view\BookForm$11.class
 com\mycompany\qlthuvien\test\test.class
