@@ -13,10 +13,7 @@ import java.util.logging.Logger;
  *
  * @author minh9
  */
-public class ExpiredMemberState extends MemberState {
-    ExpiredMemberState(Member member){
-        super(member);
-    }
+public class ExpiredMemberState implements MemberState {
     @Override
     public void ChangeState(MemberContext context,int maDG, int maPM) {
         String query = "Update DocGia Set TrangThaiThe  = 0 where GETDATE() > NgayHetHan";
