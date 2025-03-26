@@ -1,5 +1,5 @@
 
-package com.mycompany.BorrowedTicketStates;
+package com.mycompany.qlthuvien.BorrowedTicketStates;
 
 /**
  *

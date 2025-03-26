@@ -5,6 +5,8 @@
 package com.mycompany.qlthuvien.view;
 
 import com.mycompany.qlthuvien.DatabaseConnection;
+import com.mycompany.qlthuvien.command.CommandManager;
+import com.mycompany.qlthuvien.command.DeleteBookCommand;
 import com.mycompany.qlthuvien.dao.BookDAO;
 import java.awt.Color;
 import java.awt.Component;
@@ -618,37 +620,21 @@ public class ChiTietSach extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonUpdateActionPerformed
 
     private void buttonDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDeleteActionPerformed
-        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this book?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            // Ensure that the bookID is not null
-            if (bookID <= 0) {
-                JOptionPane.showMessageDialog(this, "Invalid book ID.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+        BookDAO bookDAO = new BookDAO();
 
-            // Perform database connection and delete operation
-            DatabaseConnection db = DatabaseConnection.getInstance();;
-            try (Connection conn = db.getConnection()) {
-                String sql = "DELETE FROM Sach WHERE MaSach = ?";
-                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                    pstmt.setInt(1, bookID);
-                    int affectedRows = pstmt.executeUpdate();
-                    if (affectedRows > 0) {
-                        JOptionPane.showMessageDialog(this, "Book deleted successfully!");
-                        // Notify the BookForm to refresh the table
-                        if (sachForm != null) {
-                            sachForm.loadData(); // Refresh the table after deletion
-                        }
-                        dispose(); // Close the form
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Failed to delete book", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Failed to delete book", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        // Xác nhận trước khi xóa
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa sách này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        // Thực hiện lệnh xóa
+        DeleteBookCommand command = new DeleteBookCommand(bookDAO, bookID);
+        CommandManager.getInstance().executeCommand(command);
+
+        JOptionPane.showMessageDialog(this, "Sách đã bị xóa!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+
+        this.dispose(); // Đóng ChiTietSach
+        sachForm.loadData();
+
     }//GEN-LAST:event_buttonDeleteActionPerformed
 
     /**

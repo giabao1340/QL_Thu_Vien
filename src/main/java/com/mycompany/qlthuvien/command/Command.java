@@ -2,15 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package FactoryMethod;
-
-import com.mycompany.qlthuvien.model.BorrowedTicket;
-import java.util.List;
+package com.mycompany.qlthuvien.command;
 
 /**
  *
  * @author luong
  */
-public interface EmailTemplate {
-    String createEmailContent();
+public interface Command {
+    void execute();
+    void undo();
 }

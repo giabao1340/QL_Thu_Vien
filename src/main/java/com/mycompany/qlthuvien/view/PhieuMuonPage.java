@@ -3,13 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.qlthuvien.view;
-import FactoryMethod.EmailFactory;
-import FactoryMethod.EmailSender;
-import FactoryMethod.EmailTemplate;
-import FactoryMethod.OverdueEmail;
-import com.mycompany.BorrowedTicketStates.BorrowedTicketContext;
-import com.mycompany.BorrowedTicketStates.OverDueState;
-import com.mycompany.BorrowedTicketStates.ReturnedTicketState;
+import com.mycompany.qlthuvien.FactoryMethod.EmailFactory;
+import com.mycompany.qlthuvien.FactoryMethod.EmailSender;
+import com.mycompany.qlthuvien.FactoryMethod.EmailTemplate;
+import com.mycompany.qlthuvien.FactoryMethod.OverdueEmail;
+import com.mycompany.qlthuvien.BorrowedTicketStates.BorrowedTicketContext;
+import com.mycompany.qlthuvien.BorrowedTicketStates.OverDueState;
+import com.mycompany.qlthuvien.BorrowedTicketStates.ReturnedTicketState;
 import com.mycompany.qlthuvien.DatabaseConnection;
 import com.mycompany.qlthuvien.dao.BorrowInfo;
 import com.mycompany.qlthuvien.dao.BorrowedTicketDAO;
