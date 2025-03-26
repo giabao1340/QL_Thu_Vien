@@ -4,8 +4,8 @@
  */
 package com.mycompany.qlthuvien.dao;
 
-import com.mycompany.BorrowedTicketStates.BorrowedTicketContext;
-import com.mycompany.BorrowedTicketStates.StillDueState;
+import com.mycompany.qlthuvien.BorrowedTicketStates.BorrowedTicketContext;
+import com.mycompany.qlthuvien.BorrowedTicketStates.StillDueState;
 import com.mycompany.qlthuvien.bookstate.BookContext;
 import com.mycompany.qlthuvien.bookstate.BorrowedState;
 import com.mycompany.qlthuvien.DatabaseConnection;

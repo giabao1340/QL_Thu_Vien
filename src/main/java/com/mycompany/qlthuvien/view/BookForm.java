@@ -4,6 +4,7 @@
  */
 package com.mycompany.qlthuvien.view;
 
+import com.mycompany.qlthuvien.command.CommandManager;
 import com.mycompany.qlthuvien.dao.BookDAO;
 import com.mycompany.qlthuvien.model.Book;
 import java.awt.Color;
@@ -191,6 +192,7 @@ public class BookForm extends javax.swing.JFrame {
         txtSearch = new javax.swing.JTextField();
         buttonSearch = new javax.swing.JButton();
         jLabelImage = new javax.swing.JLabel();
+        btnUndo = new javax.swing.JButton();
 
         jRadioButtonMenuItem1.setSelected(true);
         jRadioButtonMenuItem1.setText("jRadioButtonMenuItem1");
@@ -327,6 +329,18 @@ public class BookForm extends javax.swing.JFrame {
         jLabelImage.setBackground(new java.awt.Color(204, 204, 204));
         jLabelImage.setOpaque(true);
 
+        btnUndo.setBackground(new java.awt.Color(0, 255, 0));
+        btnUndo.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnUndo.setForeground(new java.awt.Color(255, 255, 255));
+        btnUndo.setText("Undo");
+        btnUndo.setBorder(null);
+        btnUndo.setBorderPainted(false);
+        btnUndo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUndoActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -383,7 +397,9 @@ public class BookForm extends javax.swing.JFrame {
                         .addContainerGap(155, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(448, 448, 448))))
+                        .addGap(18, 18, 18)
+                        .addComponent(btnUndo, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(316, 316, 316))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -441,7 +457,8 @@ public class BookForm extends javax.swing.JFrame {
                 .addGap(29, 29, 29)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buttonSave, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnUndo, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(35, 35, 35))
         );
 
@@ -590,6 +607,21 @@ public class BookForm extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_buttonUploadImageActionPerformed
+
+    private void btnUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUndoActionPerformed
+        // TODO add your handling code here:
+    if (CommandManager.getInstance().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Không có thao tác nào để hoàn tác!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    CommandManager.getInstance().undoLastCommand(); // Hoàn tác lệnh gần nhất
+
+    JOptionPane.showMessageDialog(this, "Hoàn tác thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+    
+    loadData(); // Cập nhật danh sách sách
+
+    }//GEN-LAST:event_btnUndoActionPerformed
     protected void loadData() {
         try {
             List<Book> books = bookDAO.getAllBooks();
@@ -653,6 +685,7 @@ public class BookForm extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnUndo;
     private javax.swing.JButton buttonSave;
     private javax.swing.JButton buttonSaveCate;
     private javax.swing.JButton buttonSearch;
