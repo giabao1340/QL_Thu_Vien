@@ -3,6 +3,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.qlthuvien.view;
+import ProxyMember.BorrowingProxy;
+import ProxyMember.TicketBorrowing;
 import com.mycompany.qlthuvien.FactoryMethod.EmailFactory;
 import com.mycompany.qlthuvien.FactoryMethod.EmailSender;
 import com.mycompany.qlthuvien.FactoryMethod.EmailTemplate;
@@ -584,11 +586,11 @@ public class PhieuMuonPage extends javax.swing.JFrame {
         ticket.setNgayTraDuKien(ngayTra);
         ticket.setMaDocGia(maDocGia);
         ticket.setTrangThai(0); 
-        BorrowedTicketDAO dao = new BorrowedTicketDAO();
+        List<String> bookTitles = listTenSach.getSelectedValuesList();      
+        
+         TicketBorrowing proxy = new BorrowingProxy(maDocGia);
 
-        List<String> bookTitles = listTenSach.getSelectedValuesList();
-
-        if (dao.addBorrowedTicketWithBooks(ticket, bookTitles)) {
+        if (proxy.borrowedTicket(ticket, bookTitles)) {
             JOptionPane.showMessageDialog(this, "Đăng ký phiếu mượn thành công.");
             // 📩 Gửi email xác nhận mượn sách
             MemberDao readerDAO = new MemberDao();
