@@ -7,6 +7,7 @@ com\mycompany\qlthuvien\bookstate\BookState.class
 com\mycompany\qlthuvien\dao\BorrowedTicketDAO.class
 memberState\ActiveMemberState.class
 com\mycompany\qlthuvien\view\UpdateMem$1.class
+ProxyMember\BorrowingProxy.class
 com\mycompany\qlthuvien\view\LoginForm$1.class
 com\mycompany\qlthuvien\view\ChiTietPhieuMuon$4.class
 com\mycompany\qlthuvien\view\HomePage.class
@@ -22,6 +23,7 @@ com\mycompany\qlthuvien\view\BookForm$5.class
 com\mycompany\qlthuvien\view\UpdateMem$7.class
 com\mycompany\qlthuvien\view\ChiTietPhieuMuon$7.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$4.class
+ProxyMember\TicketBorrowing.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$7.class
 com\mycompany\qlthuvien\view\ChiTietPhieuMuon.class
 com\mycompany\qlthuvien\view\BookForm$1.class
@@ -31,13 +33,16 @@ com\mycompany\qlthuvien\view\UpdateMem.class
 com\mycompany\qlthuvien\view\UpdateMem$6.class
 com\mycompany\qlthuvien\view\BookForm$15.class
 memberState\ExpiredMemberState.class
+com\mycompany\qlthuvien\view\MemberForm$10.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$5.class
 com\mycompany\qlthuvien\view\RegisterMember$1.class
 com\mycompany\qlthuvien\view\HomePage$4.class
+MemberMemento\MemberMemento.class
 com\mycompany\qlthuvien\view\RegisterMember.class
 com\mycompany\qlthuvien\dao\MemberDao.class
 com\mycompany\qlthuvien\view\ChiTietSach$2.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$10.class
+com\mycompany\qlthuvien\view\MemberForm$11.class
 com\mycompany\qlthuvien\view\UpdateMem$5.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$6.class
 com\mycompany\qlthuvien\view\RegisterMember$2.class
@@ -85,6 +90,7 @@ com\mycompany\qlthuvien\view\RegisterMember$5.class
 com\mycompany\qlthuvien\view\MemberForm$1.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$13.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$8.class
+ProxyMember\RealBookBorrowing.class
 com\mycompany\qlthuvien\model\BorrowedTicket.class
 com\mycompany\qlthuvien\view\BookForm$12.class
 com\mycompany\qlthuvien\view\LoginForm$GradientPanel.class
@@ -101,6 +107,7 @@ com\mycompany\qlthuvien\bookstate\BorrowedState.class
 com\mycompany\qlthuvien\view\UpdateMem$8.class
 com\mycompany\qlthuvien\view\PhieuMuonPage$2.class
 com\mycompany\qlthuvien\view\BookForm$3.class
+MemberMemento\MemberRestore.class
 com\mycompany\qlthuvien\view\ChiTietPhieuMuon$5.class
 com\mycompany\qlthuvien\view\ChiTietSach$10.class
 com\mycompany\qlthuvien\dao\BorrowInfo.class

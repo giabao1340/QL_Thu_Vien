@@ -42,6 +42,7 @@ import javax.mail.internet.MimeMessage;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.util.List;
+import memberState.ActiveMemberState;
 import memberState.BlockedMemberState;
 import memberState.MemberContext;
 public class ChiTietPhieuMuon extends javax.swing.JFrame {
@@ -356,6 +357,10 @@ private void btnTraSachActionPerformed(java.awt.event.ActionEvent evt) {
                 BorrowedTicketContext context = new BorrowedTicketContext(conn);
                 context.setState(new ReturnedTicketState());
                 context.updateSachStatus(maPM);
+                
+                MemberContext memberContext = new MemberContext();
+                memberContext.setState(new ActiveMemberState());
+                memberContext.ChangeState(maDocGia,maPM);
 
                 // Lưu sách đã trả
                 sachDaTra.add(tableSachMuon.getValueAt(row, 1).toString());

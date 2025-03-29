@@ -79,6 +79,8 @@ public class MemberForm extends javax.swing.JFrame {
         addMemBtn = new javax.swing.JButton();
         memAva = new javax.swing.JLabel();
         outBtn = new javax.swing.JButton();
+        undoMemBtn = new javax.swing.JButton();
+        RedoMemBtn = new javax.swing.JButton();
 
         jToggleButton1.setText("jToggleButton1");
 
@@ -221,6 +223,28 @@ public class MemberForm extends javax.swing.JFrame {
             }
         });
 
+        undoMemBtn.setBackground(new java.awt.Color(255, 51, 255));
+        undoMemBtn.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        undoMemBtn.setForeground(new java.awt.Color(255, 255, 255));
+        undoMemBtn.setText("Undo");
+        undoMemBtn.setBorder(null);
+        undoMemBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undoMemBtnActionPerformed(evt);
+            }
+        });
+
+        RedoMemBtn.setBackground(new java.awt.Color(255, 51, 255));
+        RedoMemBtn.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        RedoMemBtn.setForeground(new java.awt.Color(255, 255, 255));
+        RedoMemBtn.setText("Redo");
+        RedoMemBtn.setBorder(null);
+        RedoMemBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                RedoMemBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -253,13 +277,22 @@ public class MemberForm extends javax.swing.JFrame {
                         .addGap(42, 42, 42)
                         .addComponent(searchBtn))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(addMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(87, 87, 87)
-                        .addComponent(changeMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(deleteMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(75, 75, 75)
-                        .addComponent(outBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(addMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(87, 87, 87)
+                                .addComponent(changeMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(RedoMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(undoMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(deleteMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(75, 75, 75)
+                                .addComponent(outBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addGap(46, 46, 46))
         );
         layout.setVerticalGroup(
@@ -298,7 +331,11 @@ public class MemberForm extends javax.swing.JFrame {
                     .addComponent(outBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(changeMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(addMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(127, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(undoMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(RedoMemBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(69, Short.MAX_VALUE))
         );
 
         pack();
@@ -405,6 +442,34 @@ public class MemberForm extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_outBtnActionPerformed
 
+    private void undoMemBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoMemBtnActionPerformed
+        MemberDao memberDao = new MemberDao(jMemTable);
+        try {
+            memberDao.restoreMem();
+             DefaultTableModel model = (DefaultTableModel) jMemTable.getModel();
+             model.setRowCount(0);
+             memberDao.showMem();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(MemberForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }//GEN-LAST:event_undoMemBtnActionPerformed
+
+    private void RedoMemBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RedoMemBtnActionPerformed
+        // TODO add your handling code here:
+        
+        MemberDao memberDao = new MemberDao(jMemTable);
+        try {
+            memberDao.resetMem();
+             DefaultTableModel model = (DefaultTableModel) jMemTable.getModel();
+             model.setRowCount(0);
+             memberDao.showMem();
+        } catch (SQLException ex) {
+            Logger.getLogger(MemberForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_RedoMemBtnActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -441,6 +506,7 @@ public class MemberForm extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton RedoMemBtn;
     private javax.swing.JButton addMemBtn;
     private javax.swing.JButton changeMemBtn;
     private javax.swing.JButton deleteMemBtn;
@@ -461,5 +527,6 @@ public class MemberForm extends javax.swing.JFrame {
     private javax.swing.JButton searchBtn;
     private javax.swing.JTextField searchTXT;
     private javax.swing.JLabel tenMemTXT;
+    private javax.swing.JButton undoMemBtn;
     // End of variables declaration//GEN-END:variables
 }
