@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=QLThuVien;encrypt=true;trustServerCertificate=true";
     private static final String USER = "sa";
-    private static final String PASSWORD = "12345";
+    private static final String PASSWORD = "1234";
 
     private static DatabaseConnection instance; // Thể hiện duy nhất của lớp
     private Connection connection;

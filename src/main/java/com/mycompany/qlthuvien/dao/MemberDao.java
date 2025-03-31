@@ -157,7 +157,7 @@ public class MemberDao {
                     psSel.setString(1, maDG);
                     ResultSet rs = psSel.executeQuery();
                     if (rs.next()) {
-                        MemberMemento memberMemento = new MemberMemento(
+                        Member member = new Member(
                             rs.getString("MaDocGia"),
                             rs.getString("HoTen"),
                             rs.getDate("NgaySinh"),
@@ -168,6 +168,7 @@ public class MemberDao {
                             rs.getInt("GioiTinh"),
                             rs.getBytes("Hinh")
                         );
+                        MemberMemento memberMemento = member.saveToMemento();
                         backup.saveMemento(memberMemento);
                         System.out.println("Member saved for undo");
                     }

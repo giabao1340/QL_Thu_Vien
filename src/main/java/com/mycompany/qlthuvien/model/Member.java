@@ -4,6 +4,7 @@
  */
 package com.mycompany.qlthuvien.model;
 
+import MemberMemento.MemberMemento;
 import java.util.Date;
 
 /**
@@ -100,5 +101,23 @@ public class Member {
     }
     public byte[] getHinh() {
         return hinh;
+    }
+    
+    
+    
+    public MemberMemento saveToMemento() {
+        return new MemberMemento(maDocGia, hoTen, ngaySinh, email, ngayLapThe, ngayHetHan, trangThai, gioiTinh, hinh);
+    }
+
+    public void restoreFromMemento(MemberMemento memento) {
+        this.maDocGia = memento.getMaDocGia();
+        this.hoTen = memento.getHoTen();
+        this.ngaySinh = memento.getNgaySinh();
+        this.email = memento.getEmail();
+        this.ngayLapThe = memento.getNgayLapThe();
+        this.ngayHetHan = memento.getNgayHetHan();
+        this.trangThai = memento.getTrangThai();
+        this.gioiTinh = memento.getGioiTinh();
+        this.hinh = memento.getHinh();
     }
 }
