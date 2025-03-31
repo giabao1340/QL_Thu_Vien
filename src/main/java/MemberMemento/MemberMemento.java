@@ -38,65 +38,35 @@ public class MemberMemento {
         return maDocGia;
     }
 
-    public void setMaDocGia(String maDocGia) {
-        this.maDocGia = maDocGia;
-    }
-
     public String getHoTen() {
         return hoTen;
-    }
-
-    public void setHoTen(String hoTen) {
-        this.hoTen = hoTen;
     }
 
     public Date getNgaySinh() {
         return ngaySinh;
     }
 
-    public void setNgaySinh(Date ngaySinh) {
-        this.ngaySinh = ngaySinh;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Date getNgayLapThe() {
         return ngayLapThe;
     }
 
-    public void setNgayLapThe(Date ngayLapThe) {
-        this.ngayLapThe = ngayLapThe;
-    }
-
     public Date getNgayHetHan() {
         return ngayHetHan;
     }
 
-    public void setNgayHetHan(Date ngayHetHan) {
-        this.ngayHetHan = ngayHetHan;
-    }
 
     public String getTrangThai() {
         return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
     }
 
     public int getGioiTinh() {
         return gioiTinh;
     }
 
-    public void setGioiTinh(int gioiTinh) {
-        this.gioiTinh = gioiTinh;
-    }
     public byte[] getHinh() {
         return hinh;
     }
